@@ -6,11 +6,11 @@ CREATE PROCEDURE sp_RegisterUser
     @password_hash NVARCHAR(255),
     @first_name NVARCHAR(50),
     @last_name NVARCHAR(50),
-    @gender CHAR(1), -- 'M', 'F', or 'O'
-    @birthday DATETIME,
+    @gender CHAR(1) = NULL, -- 'M', 'F', or 'O', optional, defaults to NULL
+    @birthday DATETIME = NULL, -- optional, defaults to NULL
     @account_email NVARCHAR(100),
-    @account_phone NVARCHAR(20),
-    @app_language NVARCHAR(10) = 'en'
+    @account_phone NVARCHAR(20) = NULL, -- optional, defaults to NULL
+    @app_language NVARCHAR(10) = 'en' -- Defaults to 'en' if not specified
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -33,8 +33,8 @@ BEGIN
 END;
 GO
 
--- Execute stored procedure to register User 1
-EXEC RegisterUser
+-- Execute stored procedure to register User
+EXEC sp_RegisterUser
     @username = 'john_doe',
     @password_hash = 'hashed_password1',
     @first_name = 'John',
@@ -45,20 +45,7 @@ EXEC RegisterUser
     @account_phone = '+1234567890',
     @app_language = 'en';
 
--- Execute stored procedure to register User 2
-EXEC RegisterUser
-    @username = 'jane_doe',
-    @password_hash = 'hashed_password2',
-    @first_name = 'Jane',
-    @last_name = 'Doe',
-    @gender = 'F',
-    @birthday = '1990-07-22',
-    @account_email = 'jane.doe@email.com',
-    @account_phone = '+1098765432',
-    @app_language = 'en';
-
--- Execute stored procedure to register User 3
-EXEC RegisterUser
+EXEC sp_RegisterUser
     @username = 'sam_smith',
     @password_hash = 'hashed_password3',
     @first_name = 'Sam',
@@ -68,4 +55,6 @@ EXEC RegisterUser
     @account_email = 'sam.smith@email.com',
     @account_phone = '+1122334455',
     @app_language = 'de';
+
+EXEC sp_RegisterUser @username = 'alice_wonder', @password_hash = 'hashed_password4', @first_name = 'Alice', @last_name = 'Wonder', @account_email = 'alice.wonder@example.com';
 GO

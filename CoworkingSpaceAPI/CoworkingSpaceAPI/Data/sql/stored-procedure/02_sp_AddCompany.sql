@@ -4,14 +4,14 @@ GO
 CREATE PROCEDURE sp_AddCompany
     -- For company table
     @name NVARCHAR(100),
-    @industry NVARCHAR(50),
-    @description NVARCHAR(255),
-    @registration_number NVARCHAR(50),
-    @tax_id NVARCHAR(50),
-    @website NVARCHAR(255),
-    @contact_email NVARCHAR(100),
-    @contact_phone NVARCHAR(20),
-    @founded_date DATETIME,
+    @industry NVARCHAR(50) = NULL,
+    @description NVARCHAR(255) = NULL,
+    @registration_number NVARCHAR(50) = NULL,
+    @tax_id NVARCHAR(50) = NULL,
+    @website NVARCHAR(255) = NULL,
+    @contact_email NVARCHAR(100) = NULL,
+    @contact_phone NVARCHAR(20) = NULL,
+    @founded_date DATE = NULL,
 
     -- For address table
     @street NVARCHAR(100),
@@ -22,11 +22,11 @@ CREATE PROCEDURE sp_AddCompany
     @country NVARCHAR(50),
 
     -- For AddressType table
-    @address_type NVARCHAR(50),
+    @address_type NVARCHAR(50) = 'Work',
 
     -- For CompanyCEO table
     @ceo_username NVARCHAR(50),
-    @ceo_start_date DATETIME
+    @ceo_start_date DATE = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
