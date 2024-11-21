@@ -42,14 +42,14 @@ CREATE TABLE LabelAssignment (
 );
 GO
 
-CREATE TABLE Role (
+CREATE TABLE Role (  -- Use `AspNetRoles` table instead
     role_id INT PRIMARY KEY NOT NULL IDENTITY(1,1),
     role_name NVARCHAR(50) UNIQUE NOT NULL,  -- Name of the role, e.g., 'Admin', 'NormalUser', 'Editor'
     description NVARCHAR(255)               -- Description of what the role entails
 );
 GO
 
-CREATE TABLE [User] (
+CREATE TABLE [User] (  -- Use `AspNetUsers` table instead
     user_id INT PRIMARY KEY NOT NULL IDENTITY(1,1),
     username NVARCHAR(50) UNIQUE NOT NULL,         -- Username for login
     password_hash NVARCHAR(255) NOT NULL,          -- Hashed password for secure storage
@@ -83,7 +83,7 @@ CREATE TABLE [User] (
 );
 GO
 
-CREATE TABLE UserRole (
+CREATE TABLE UserRole (  -- Use `AspNetUserRoles` table instead
     user_id INT NOT NULL,
     role_id INT NOT NULL,
     PRIMARY KEY (user_id, role_id),
