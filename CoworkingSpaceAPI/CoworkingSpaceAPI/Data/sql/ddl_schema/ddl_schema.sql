@@ -29,7 +29,7 @@ CREATE TABLE Label (
     label_id INT PRIMARY KEY NOT NULL IDENTITY(1,1),    -- Unique identifier for each label
     label_name NVARCHAR(50) NOT NULL UNIQUE,            -- Unique name for the label
     description NVARCHAR(255),                          -- Description of the label
-    color_code NVARCHAR(7)                              -- HEX color code for the label, optional
+    color_code NVARCHAR(7)                             -- HEX color code for the label, optional
 );
 GO
 
@@ -79,7 +79,6 @@ CREATE TABLE [User] (
     snapchat NVARCHAR(255),
     created_at DATETIME,         -- Account creation date and time
     updated_at DATETIME,         -- Last update date and time
-    last_login DATETIME,                           -- Last login timestamp
     status NVARCHAR(20) DEFAULT 'active',          -- Account status (e.g., 'active', 'suspended')
 );
 GO
@@ -97,8 +96,8 @@ CREATE TABLE UserAddress (
     user_address_id INT PRIMARY KEY NOT NULL IDENTITY(1,1),
     user_id INT,
     address_id INT,
-    is_default BIT DEFAULT 0,
     address_type_id INT,
+    is_default BIT DEFAULT 0,
     created_at DATETIME,
     updated_at DATETIME,
     FOREIGN KEY (user_id) REFERENCES [User](user_id),
@@ -177,12 +176,11 @@ CREATE TABLE CompanyAddress (
 GO
 
 CREATE TABLE Room (
-    room_id INT IDENTITY(1,1) PRIMARY KEY,                    -- Room ID
+    room_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,                    -- Room ID
     room_name NVARCHAR(100) NOT NULL,                         -- Room name
     room_type NVARCHAR(50) CHECK (room_type IN ('Office', 'ConferenceRoom', 'Workspace')),
     price DECIMAL(10, 2) DEFAULT 0.00, -- Price of the room per hour in decimal format
     currency NVARCHAR(3) DEFAULT 'EUR', -- Currency code for the price, defaulting to Euro
-    capacity INT NOT NULL,                                    -- Capacity of the room
     is_active BIT NOT NULL DEFAULT 1,                         -- Is the room active?
     created_at DATETIME NOT NULL,
     updated_at DATETIME NULL,
@@ -193,7 +191,7 @@ GO
 
 CREATE TABLE Desk (
     desk_id INT IDENTITY(1,1) PRIMARY KEY,
-    room_id INT NOT NULL,  
+    room_id INT NOT NULL FOREIGN KEY REFERENCES Room(room_id),  
     desk_name NVARCHAR(100) NOT NULL,
     price DECIMAL(10, 2) DEFAULT 0.00, -- Price of the desk per hour in decimal format
     currency NVARCHAR(3) DEFAULT 'EUR', -- Currency code for the price, defaulting to Euro 
