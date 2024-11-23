@@ -203,8 +203,8 @@ GO
 
 CREATE TABLE Booking (
     booking_id INT IDENTITY(1,1) PRIMARY KEY,
-    user_id INT NOT NULL, 
-    desk_id INT NOT NULL,
+    user_id INT NOT NULL FOREIGN KEY REFERENCES [User](user_id), 
+    desk_id INT NOT NULL FOREIGN KEY REFERENCES Desk(desk_id),
     start_time DATETIME NOT NULL,                             -- Booking start time
     end_time DATETIME NOT NULL,                               -- Booking end time
     total_cost DECIMAL(10, 2) NOT NULL,                       -- Cost of the booking

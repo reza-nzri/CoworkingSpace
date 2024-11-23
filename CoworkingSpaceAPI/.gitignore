@@ -516,3 +516,6 @@ ehthumbs.db
 # Environment Variables
 *.env
 CoworkingSpaceAPI/.env
+
+# Install Dependencies (NuGet Packages) Linux/MacOS Shell Script
+install-packages.sh

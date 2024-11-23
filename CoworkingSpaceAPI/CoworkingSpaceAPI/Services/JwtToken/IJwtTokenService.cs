@@ -1,9 +1,9 @@
-﻿using SapiensDataAPI.Dtos.Auth.Request;
-using SapiensDataAPI.Dtos.Auth.Response;
-using SapiensDataAPI.Models;
+﻿using CoworkingSpaceAPI.Dtos.Auth.Request;
+using CoworkingSpaceAPI.Dtos.Auth.Response;
+using CoworkingSpaceAPI.Models;
 using System.Text.Json;
 
-namespace SapiensDataAPI.Services.JwtToken
+namespace CoworkingSpaceAPI.Services.JwtToken
 {
 	public interface IJwtTokenService
 	{

@@ -1,4 +1,4 @@
-﻿namespace SapiensDataAPI.Dtos.Auth.Request
+﻿namespace CoworkingSpaceAPI.Dtos.Auth.Request
 {
     public class RegisterRequestDto
     {

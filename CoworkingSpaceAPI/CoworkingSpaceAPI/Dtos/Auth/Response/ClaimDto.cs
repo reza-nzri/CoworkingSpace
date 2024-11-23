@@ -1,5 +1,5 @@
-﻿// SapiensDataAPI/Dtos/Auth/Response/ClaimDto.cs
-namespace SapiensDataAPI.Dtos.Auth.Response
+﻿// CoworkingSpaceAPI/Dtos/Auth/Response/ClaimDto.cs
+namespace CoworkingSpaceAPI.Dtos.Auth.Response
 {
     public class ClaimDto
     {

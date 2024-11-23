@@ -1,4 +1,4 @@
-﻿namespace SapiensDataAPI.Dtos.Auth
+﻿namespace CoworkingSpaceAPI.Dtos.Auth
 {
     public class AuthResult
     {

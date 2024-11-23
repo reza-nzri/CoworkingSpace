@@ -1,4 +1,4 @@
-﻿namespace SapiensDataAPI.Dtos.Auth.Response
+﻿namespace CoworkingSpaceAPI.Dtos.Auth.Response
 {
     public class RefreshTokenResponseDto
     {
