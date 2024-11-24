@@ -11,6 +11,25 @@ namespace CoworkingSpaceAPI.Configs
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUserModel>>();
             var dbContext = serviceProvider.GetRequiredService<CoworkingSpaceDbContext>();
 
+            await SeedUsers(userManager, dbContext);
+            await SeedAddressTypes(dbContext);
+            await SeedCompany(userManager, dbContext);
+        }
+
+        private static async Task SeedUsers(UserManager<ApplicationUserModel> userManager, CoworkingSpaceDbContext dbContext)
+        {
+            if (await dbContext.Users.AnyAsync())
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Users already exist.");
+                Console.ResetColor();
+                return;
+            }
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("Seeding users...");
+            Console.ResetColor();
+
             // Fetch the admin password from the environment variables
             var adminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
 
@@ -52,6 +71,17 @@ namespace CoworkingSpaceAPI.Configs
                     }
                 }
             }
+        }
+
+        private static async Task SeedAddressTypes(CoworkingSpaceDbContext dbContext)
+        {
+            if (await dbContext.AddressTypes.AnyAsync())
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Companies already exist.");
+                Console.ResetColor();
+                return;
+            }
 
             // Seed Address Types
             if (!dbContext.AddressTypes.Any())
@@ -72,6 +102,21 @@ namespace CoworkingSpaceAPI.Configs
 
                 dbContext.AddressTypes.AddRange(addressTypes);
                 await dbContext.SaveChangesAsync();
+            }
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("Seeding address types...");
+            Console.ResetColor();
+        }
+
+        private static async Task SeedCompany(UserManager<ApplicationUserModel> userManager, CoworkingSpaceDbContext dbContext)
+        {
+            if (await dbContext.Companies.AnyAsync())
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Companies already exist.");
+                Console.ResetColor();
+                return;
             }
 
             // Seed Company
@@ -221,6 +266,10 @@ namespace CoworkingSpaceAPI.Configs
                     dbContext.LabelAssignments.AddRange(assignments);
                     await dbContext.SaveChangesAsync();
                 }
+
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("Seeding company...");
+                Console.ResetColor();
             }
         }
     }
