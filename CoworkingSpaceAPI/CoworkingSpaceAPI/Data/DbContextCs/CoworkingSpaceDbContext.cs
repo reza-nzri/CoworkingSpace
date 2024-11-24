@@ -81,10 +81,10 @@ public partial class CoworkingSpaceDbContext : IdentityDbContext<ApplicationUser
 
             entity.ToTable("AddressType");
 
-            entity.HasIndex(e => e.AddressType1, "UQ__AddressT__071A958776CC882F").IsUnique();
+            entity.HasIndex(e => e.AddressTypeName, "UQ__AddressT__071A958776CC882F").IsUnique();
 
             entity.Property(e => e.AddressTypeId).HasColumnName("address_type_id");
-            entity.Property(e => e.AddressType1)
+            entity.Property(e => e.AddressTypeName)
                 .HasMaxLength(50)
                 .HasColumnName("address_type");
             entity.Property(e => e.Description)

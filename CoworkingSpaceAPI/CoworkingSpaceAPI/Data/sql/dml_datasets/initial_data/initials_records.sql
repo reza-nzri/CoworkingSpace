@@ -15,13 +15,3 @@ VALUES
     ('R&D', 'Research and development facility address.'),
     ('Field Office', 'Remote office location for field operations.');
 GO
-
--- Insert roles into the Role table
-INSERT INTO Role (role_name, description)
-VALUES 
-    ('Admin', 'Administrative user with full system access.'),
-    ('NormalUser', 'Standard user with basic access privileges.'),
-    ('Editor', 'User who can create, edit, and delete content.'),
-    ('Guest', 'Temporary user with limited access for viewing content.'),
-    ('Manager', 'User who can manage team settings and has moderate access.');
-GO

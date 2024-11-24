@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace CoworkingSpaceAPI.Models;
+﻿namespace CoworkingSpaceAPI.Models;
 
 public partial class AddressType
 {
     public int AddressTypeId { get; set; }
 
-    public string? AddressType1 { get; set; }
+    public string? AddressTypeName { get; set; }
 
     public string? Description { get; set; }
 

@@ -1,0 +1,91 @@
+CoworkingSpace/CoworkingSpaceAPI/
+  ├─ CoworkingSpaceAPI/
+  │  ├─ Configs/
+  │  ├─ Controllers/
+  │  │  ├─ AccountController.cs
+  │  │  ├─ AddressController.cs
+  │  │  ├─ AuthController.cs
+  │  │  ├─ BookingController.cs
+  │  │  ├─ CompanyController.cs
+  │  │  ├─ DeskController.cs
+  │  │  └─ RoomController.cs
+  │  ├─ Data/
+  │  │  ├─ DbContextCs/
+  │  │  │  └─ CoworkingSpaceDbContext.cs
+  │  │  ├─ sql/
+  │  │  │  ├─ ddl_schema/
+  │  │  │  │  └─ ddl_schema.sql
+  │  │  │  ├─ dml_datasets/
+  │  │  │  │  ├─ demo_data/
+  │  │  │  │  │  └─ 01_demo_data.sql
+  │  │  │  │  ├─ dummy_data/
+  │  │  │  │  │  └─ dymmy_data.sql
+  │  │  │  │  └─ initial_data/
+  │  │  │  │     └─ initials_records.sql
+  │  │  │  ├─ stored-procedure/
+  │  │  │  │  ├─ 01_sp_RegisterUser.sql
+  │  │  │  │  ├─ 02_sp_AddCompany.sql
+  │  │  │  │  ├─ 03_sp_AddRoom.sql
+  │  │  │  │  ├─ 04_sp_AddDesk.sql
+  │  │  │  │  ├─ 05_sp_UpdateUserProfile.sql
+  │  │  │  │  ├─ 06_sp_AddCompanyEmployee.sql
+  │  │  │  │  └─ 07_sp_AddLabelAndAssignment.sql
+  │  │  │  ├─ triggers/
+  │  │  │  │  └─ trg_UpdateCompanyAddress.sql
+  │  │  │  └─ views/
+  │  │  └─ SSMS_Backups/
+  │  │     ├─ 1.0_backup_20241105_140000.sql
+  │  │     └─ ddl_schema_backup_20241123_222100.sql
+  │  ├─ Dtos/
+  │  │  └─ Auth/
+  │  │     ├─ Request/
+  │  │     │  ├─ AdminUpdateUserDto.cs
+  │  │     │  ├─ ChangeUserRoleRequestDto.cs
+  │  │     │  ├─ LoginRequestDto.cs
+  │  │     │  ├─ RegisterRequestDto.cs
+  │  │     │  ├─ TokenRequestDto.cs
+  │  │     │  └─ UserProfileUpdateDto.cs
+  │  │     ├─ Response/
+  │  │     │  ├─ ClaimDto.cs
+  │  │     │  ├─ LoginResponseDto.cs
+  │  │     │  ├─ RefreshTokenResponseDto.cs
+  │  │     │  └─ RegisterResponseDto.cs
+  │  │     └─ AuthResult.cs
+  │  ├─ Migrations/
+  │  │  ├─ 20241123202540_init.cs
+  │  │  ├─ 20241123202540_init.Designer.cs
+  │  │  └─ CoworkingSpaceDbContextModelSnapshot.cs
+  │  ├─ Models/
+  │  │  ├─ Address.cs
+  │  │  ├─ AddressType.cs
+  │  │  ├─ ApplicationUserModel.cs
+  │  │  ├─ Booking.cs
+  │  │  ├─ Company.cs
+  │  │  ├─ CompanyAddress.cs
+  │  │  ├─ CompanyCeo.cs
+  │  │  ├─ CompanyEmployee.cs
+  │  │  ├─ Desk.cs
+  │  │  ├─ Label.cs
+  │  │  ├─ LabelAssignment.cs
+  │  │  ├─ Room.cs
+  │  │  ├─ UserAddress.cs
+  │  │  └─ UserSession.cs
+  │  ├─ Properties/
+  │  │  └─ launchSettings.json
+  │  ├─ Services/
+  │  │  └─ JwtToken/
+  │  │     ├─ IJwtTokenService.cs
+  │  │     └─ JwtTokenService.cs
+  │  ├─].env (ignored)
+  │  ├─ .env.example
+  │  ├─ appsettings.Development.json
+  │  ├─ appsettings.json
+  │  ├─ CoworkingSpaceAPI.csproj
+  │  ├─ CoworkingSpaceAPI.csproj.user
+  │  ├─ CoworkingSpaceAPI.http
+  │  ├─ install-packages.bat
+  │  └─ Program.cs
+  ├─ .gitignore
+  ├─ CoworkingSpaceAPI.sln
+  ├─ folder-structure.txt
+  └─ README.md
