@@ -1,4 +1,3 @@
-using CoworkingSpaceAPI.Configs;
 using CoworkingSpaceAPI.Models;
 using CoworkingSpaceAPI.Services.JwtToken;
 using DotNetEnv;
@@ -182,28 +181,6 @@ var app = builder.Build(); // Build the application
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment()) // Check if the application is in development environment
 {
-    using (var scope = app.Services.CreateScope())
-    {
-        var services = scope.ServiceProvider;
-        var dbContext = services.GetRequiredService<CoworkingSpaceDbContext>();
-        if (dbContext.Database.CanConnect()) // Prüfen, ob eine Verbindung zur Datenbank möglich ist
-        {
-            if (!dbContext.Users.Any()) // Einfache Überprüfung, ob Benutzer bereits existieren
-            {
-                await Seeder.SeedAsync(services); // Seeding nur, wenn keine Benutzer vorhanden sind
-                Console.ForegroundColor = ConsoleColor.Yellow; // Setze die Textfarbe auf Gelb
-                Console.WriteLine("Seeding completed successfully.");
-                Console.ResetColor(); // Setzt die Farbe zurück auf die Standardfarbe
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow; // Setze die Textfarbe auf Gelb
-                Console.WriteLine("Seeding skipped: Users already exist.");
-                Console.ResetColor(); // Setzt die Farbe zurück auf die Standardfarbe
-            }
-        }
-    }
-
     app.UseSwagger(); // Enable Swagger for API documentation
     app.UseSwaggerUI(); // Enable the Swagger UI
 }
