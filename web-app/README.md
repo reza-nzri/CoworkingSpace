@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CoworkingSpace: Desk Web App
 
-## Getting Started
+![Desk Web-App Logo](public/media/images/logos/desk_logo/text_desk_logo_1.svg)
 
-First, run the development server:
+Here is a detailed `README.md` for your Coworking Space web application project. This document is designed to guide both new users and developers through setup, usage, and development phases of the project.
+
+## 🌐 Project Overview
+
+The Coworking Space web app is designed to streamline the management and booking of workspaces and resources within coworking environments. The app enables users to register and manage their profiles, book desks or rooms, manage companies and employees, and much more. The backend is built on ASP.NET Core, while the frontend leverages Next.js, TypeScript, and TailwindCSS for a responsive, modern design in dark mode.
+
+### Main Features
+
+- **User Registration/Login:** Secure authentication and authorization.
+- **Profile Management:** Users can update their profiles and manage their credentials.
+- **Company Management:** Create and manage company details and add employees.
+- **Booking System:** Book desks and rooms with a visual map interface.
+- **Admin Panel:** Admin controls to manage user roles and system settings.
+
+## ⚙️ Setup & Installation
+
+### Prerequisites
+
+- Node.js 12.x or later
+- npm (typically comes with Node.js)
+- Git
+
+### Installing Dependencies
+
+Clone the repository and install the dependencies:
+
+```bash
+git clone https://gitlab.com/bktmpdr/itas/2022_ait/ait30v-2025_25/projektarbeit/02-coworkingspace/reza-nazari/coworkingspace.git
+cd CoworkingSpace/web-app
+npm install
+```
+
+### Running the Application
+
+To start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit `http://localhost:3000` in your browser to view the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📖 Usage Instructions
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Environment Configuration
 
-## Learn More
+Configure the `.env.local` file with your backend API URLs and any other sensitive keys as necessary:
 
-To learn more about Next.js, take a look at the following resources:
+```
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Common Tasks
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Register a new user:** Navigate to `/register` to create a new user account.
+- **Log in:** Go to `/login` to access your account using your credentials.
+- **Book a room:** Access the booking interface through the dashboard after logging in.
 
-## Deploy on Vercel
+## 👨‍💻 Developer Information
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Contributors
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Reza Nazari** - Lead Developer
+
+## 🔄 Project Versions
+
+For detailed changelog and version information, refer to the [Changelog](./CHANGELOG.md).
+
+## 📦 Project Dependencies
+
+Refer to `package.json` for a comprehensive list of project dependencies and their installation commands.
+
+## 🙏 Acknowledgments
+
+Special thanks to all contributors and testers who have made this project possible.
+
+## 🔮 Future Plans
+
+Future updates will include:
+
+- Enhanced security features.
+- Integration with IoT for workspace management.
+- Mobile app version.
+
+## 📄 License Information
+
+This project is licensed under the MIT License - see the [LICENSE.md](./LICENSE.md) file for details.
+
+## ©️ Copyright & Creator
+
+© 2024 Reza Nazari \_ BK-TM MG. All rights reserved.
+
+**Developers:**
+Reza Nazari
+
+**Social Media:**
+
+- LinkedIn: [reza-nazarii](https://linkedin.com/in/reza-nazarii)
+- Facebook: [RezaNazari0](https://facebook.com/RezaNazari0)
+- Instagram: [@reza_nazarii](https://instagram.com/reza_nazarii)
+- GitHub: [@reza-nzri](https://github.com/reza-nzri)
+- GitLab: [@Reza_Nazari](https://gitlab.com/Reza_Nazari)
+
+This `README.md` is crafted to be concise yet comprehensive, covering all aspects necessary for both using and developing the Coworking Space web application.

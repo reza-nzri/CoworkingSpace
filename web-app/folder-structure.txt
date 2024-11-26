@@ -1,0 +1,83 @@
+CoworkingSpace/web-app/
+  ├─].next/ (ignored)
+  ├─]node_modules/ (ignored)
+  ├─ public/
+  │  └─ media/
+  │     └─ images/
+  │        └─ logos/
+  │           └─ desk_logo/
+  │              ├─ desk_logo_1.svg
+  │              └─ text_desk_logo_1.svg
+  ├─ src/
+  │  └─ app/
+  │     ├─ api/
+  │     │  ├─ authApi.js
+  │     │  └─ PrivateRoute.js
+  │     ├─ components/
+  │     │  ├─ common/
+  │     │  │  ├─ Button.tsx
+  │     │  │  ├─ Input.tsx
+  │     │  │  ├─ LogoutButton.js
+  │     │  │  ├─ Modal.tsx
+  │     │  │  └─ Tooltip.tsx
+  │     │  ├─ forms/
+  │     │  │  ├─ CompanyForm.tsx
+  │     │  │  ├─ LoginForm.tsx
+  │     │  │  ├─ ProfileForm.tsx
+  │     │  │  └─ RegisterForm.tsx
+  │     │  ├─ layout/
+  │     │  │  ├─ Footer.tsx
+  │     │  │  ├─ Header.tsx
+  │     │  │  ├─ Navbar.tsx
+  │     │  │  └─ Sidebar.tsx
+  │     │  └─ maps/
+  │     │     └─ RoomMap.tsx
+  │     ├─ fonts/
+  │     │  ├─ GeistMonoVF.woff
+  │     │  └─ GeistVF.woff
+  │     ├─ hooks/
+  │     │  ├─ useAuth.ts
+  │     │  ├─ useBooking.ts
+  │     │  └─ useCompany.ts
+  │     ├─ index/
+  │     ├─ pages/
+  │     │  ├─ admin/
+  │     │  │  ├─ index.tsx
+  │     │  │  └─ roles.tsx
+  │     │  ├─ company/
+  │     │  │  ├─ index.tsx
+  │     │  │  └─ new.tsx
+  │     │  ├─ profile/
+  │     │  │  ├─ index.tsx
+  │     │  │  └─ settings.tsx
+  │     │  ├─ index.tsx
+  │     │  ├─ login.tsx
+  │     │  └─ register.tsx
+  │     ├─ services/
+  │     │  ├─ authService.ts
+  │     │  ├─ bookingService.ts
+  │     │  ├─ companyService.ts
+  │     │  └─ userService.ts
+  │     ├─ store/
+  │     │  ├─ bookingStore.ts
+  │     │  ├─ companyStore.ts
+  │     │  └─ userStore.ts
+  │     ├─ styles/
+  │     │  ├─ globals.css
+  │     │  └─ themes.css
+  │     ├─ utils/
+  │     │  ├─ authUtils.js
+  │     │  └─ cookieUtils.js
+  │     ├─ layout.tsx
+  │     └─ page.tsx
+  ├─ .eslintrc.json
+  ├─ .gitignore
+  ├─ folder-structure.txt
+  ├─]next-env.d.ts (ignored)
+  ├─ next.config.ts
+  ├─ package-lock.json
+  ├─ package.json
+  ├─ postcss.config.mjs
+  ├─ README.md
+  ├─ tailwind.config.ts
+  └─ tsconfig.json
