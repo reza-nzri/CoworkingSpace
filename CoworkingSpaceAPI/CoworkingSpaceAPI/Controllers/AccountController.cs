@@ -134,6 +134,96 @@ namespace CoworkingSpaceAPI.Controllers
             });
         }
 
+        [HttpGet("get-user-details")]
+        public async Task<IActionResult> GetUserDetails()
+        {
+            // Extract username from JWT
+            var username = User?.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return BadRequest(new
+                {
+                    StatusCode = 400,
+                    Message = "Username cannot be determined from the token."
+                });
+            }
+
+            // Find user by username
+            var user = await _userManager.FindByNameAsync(username);
+
+            // Check if user exists
+            if (user == null)
+            {
+                return NotFound(new
+                {
+                    StatusCode = 404,
+                    Message = $"User with username '{username}' was not found."
+                });
+            }
+
+            // Get roles for the user
+            var roles = await _userManager.GetRolesAsync(user);
+
+            // Construct user response including all fields from UserProfileUpdateDto
+            var userWithRolesAndDetails = new UserProfileUpdateDto
+            {
+                Username = user.UserName,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                MiddleName = user.MiddleName,
+                LastName = user.LastName,
+                Prefix = user.Prefix,
+                Suffix = user.Suffix,
+                Nickname = user.Nickname,
+                RecoveryEmail = user.RecoveryEmail,
+                AlternaiveEmail = user.AlternaiveEmail,
+                RecoveryPhoneNumber = user.RecoveryPhoneNumber,
+                Gender = user.Gender,
+                Birthday = user.Birthday,
+                ProfilePicturePath = user.ProfilePicturePath,
+                CompanyName = user.CompanyName,
+                JobTitle = user.JobTitle,
+                Department = user.Department,
+                AppLanguage = user.AppLanguage,
+                Website = user.Website,
+                Linkedin = user.Linkedin,
+                Facebook = user.Facebook,
+                Instagram = user.Instagram,
+                Twitter = user.Twitter,
+                Github = user.Github,
+                Youtube = user.Youtube,
+                Tiktok = user.Tiktok,
+                Snapchat = user.Snapchat,
+            };
+
+            // Query the address associated with the user
+            var address = await _context.UserAddresses
+                .Where(ua => ua.UserId == user.Id && (ua.IsDefault ?? false))
+                .Select(ua => new
+                {
+                    ua.Address.Street,
+                    ua.Address.HouseNumber,
+                    ua.Address.PostalCode,
+                    ua.Address.City,
+                    ua.Address.State,
+                    ua.Address.Country,
+                    AddressType = ua.AddressType.AddressTypeName,
+                    ua.IsDefault
+                })
+                .FirstOrDefaultAsync();
+
+            return Ok(new
+            {
+                StatusCode = 200,
+                Message = "User found successfully.",
+                Data = new
+                {
+                    User = userWithRolesAndDetails,
+                    Address = address
+                }
+            });
+        }
+
         // Admin deletes a user by username
         [HttpDelete("admin/delete-user/{username}")]
         [Authorize(Roles = "Admin")]
@@ -242,15 +332,30 @@ namespace CoworkingSpaceAPI.Controllers
         [HttpPut("update-my-profile")]
         public async Task<IActionResult> UpdateMyProfile([FromBody] UserProfileUpdateDto model)
         {
-            if (string.IsNullOrEmpty(model.Username))
+            // Extract the username from the JWT
+            var username = User?.Identity?.Name; // Assuming the username is stored in the Name claim of the JWT
+            if (string.IsNullOrEmpty(username))
             {
-                return BadRequest("Username is required.");
+                return Unauthorized("Invalid token or username not found.");
             }
 
-            var user = await _userManager.FindByNameAsync(model.Username);
+            // Find the user using the username extracted from the JWT
+            var user = await _userManager.FindByNameAsync(username); // Change from model.Username to username
             if (user == null)
             {
                 return NotFound("User not found.");
+            }
+
+            // to allow updating the username if it's different and doesn't already exist in the database
+            if (!string.IsNullOrEmpty(model.Username) && model.Username != user.UserName)
+            {
+                var existingUser = await _userManager.FindByNameAsync(model.Username);
+                if (existingUser != null)
+                {
+                    return Conflict("The chosen username is already in use. Please choose a different one.");
+                }
+                user.UserName = model.Username; // Assign the new username
+                user.NormalizedUserName = model.Username.ToUpper(); // Keep the normalized username updated
             }
 
             // Begin transaction for atomic updates
