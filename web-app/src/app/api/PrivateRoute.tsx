@@ -40,11 +40,12 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
       const decoded: CustomJwtPayload = jwtDecode<CustomJwtPayload>(token);
       const userRole = decoded.role;
 
+      // Allow access to public routes for all users
       if (publicRoutes.includes(pathname)) {
-        router.push('/profile');
         return;
       }
 
+      // Check role-based access for private routes
       const allowedRoutes =
         roleAccess[userRole as keyof typeof roleAccess] || [];
       if (!allowedRoutes.includes(pathname)) {
