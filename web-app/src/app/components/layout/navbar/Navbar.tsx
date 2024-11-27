@@ -4,7 +4,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faBook } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faBook, faBuilding } from '@fortawesome/free-solid-svg-icons';
 import LanguageDropdown from './LanguageDropdown';
 import ThemeSwitch from './ThemeSwitch';
 import ProfileMenu from './ProfileMenu';
@@ -37,11 +37,19 @@ const Navbar: React.FC = () => {
           >
             <FontAwesomeIcon icon={faHome} /> Home
           </Link>
+
           <Link
             href={ROUTES.BOOKINGS}
             className="hover:text-[#ef4035] flex items-center gap-1"
           >
-            <FontAwesomeIcon icon={faBook} /> Booking
+            <FontAwesomeIcon icon={faBook} /> Book Now
+          </Link>
+
+          <Link
+            href={ROUTES.COMPANY}
+            className="hover:text-[#ef4035] flex items-center gap-1"
+          >
+            <FontAwesomeIcon icon={faBuilding} /> Company
           </Link>
         </div>
 

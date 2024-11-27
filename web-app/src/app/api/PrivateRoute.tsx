@@ -9,6 +9,7 @@ import { jwtDecode, JwtPayload } from 'jwt-decode';
 interface PrivateRouteProps {
   children: React.ReactNode;
   publicRoutes?: string[];
+  requiredRole?: string;
 }
 
 interface CustomJwtPayload extends JwtPayload {
