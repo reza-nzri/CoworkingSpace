@@ -12,6 +12,7 @@ namespace CoworkingSpaceAPI.Controllers
     // Define the route for the controller and mark it as an API controller
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AccountController : ControllerBase
     {
         // Dependency injection for UserManager, RoleManager, and IJwtTokenService
@@ -183,7 +184,7 @@ namespace CoworkingSpaceAPI.Controllers
             return Ok("All users deleted successfully."); // Return success after all users are deleted
         }
 
-        // Admin updates a user by username
+        // Admin updates a user by username (+ role)
         [HttpPut("admin/update-user/{username}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AdminUpdateUser(string username, [FromBody] AdminUpdateUserDto model)
@@ -238,41 +239,135 @@ namespace CoworkingSpaceAPI.Controllers
             return Ok($"User '{username}' updated successfully by admin.");
         }
 
-        // Allows a user to update their profile
         [HttpPut("update-my-profile")]
         public async Task<IActionResult> UpdateMyProfile([FromBody] UserProfileUpdateDto model)
         {
-            if (model.Username == null)
+            if (string.IsNullOrEmpty(model.Username))
             {
-                return BadRequest("No username");
+                return BadRequest("Username is required.");
             }
-            var user = await _userManager.FindByNameAsync(model.Username); // Use the username from the model
+
+            var user = await _userManager.FindByNameAsync(model.Username);
             if (user == null)
-                return NotFound("User not found."); // Return not found if user doesn't exist
-
-            // Update user properties if provided, otherwise retain existing values
-            user.Email = model.Email ?? user.Email;
-            user.FirstName = model.FirstName ?? user.FirstName;
-            user.LastName = model.LastName ?? user.LastName;
-
-            var updateResult = await _userManager.UpdateAsync(user); // Attempt to update the user
-            if (!updateResult.Succeeded)
-                return BadRequest($"Error updating your profile: {string.Join(", ", updateResult.Errors.Select(e => e.Description))}"); // Return any errors
-
-            // Handle password update if provided
-            if (!string.IsNullOrEmpty(model.Password))
             {
-                var passwordRemovalResult = await _userManager.RemovePasswordAsync(user); // Remove current password
-                if (!passwordRemovalResult.Succeeded)
-                    return BadRequest($"Error removing your password: {string.Join(", ", passwordRemovalResult.Errors.Select(e => e.Description))}"); // Return any errors
-
-                var addPasswordResult = await _userManager.AddPasswordAsync(user, model.Password); // Add new password
-                if (!addPasswordResult.Succeeded)
-                    return BadRequest($"Error setting your password: {string.Join(", ", addPasswordResult.Errors.Select(e => e.Description))}"); // Return any errors
+                return NotFound("User not found.");
             }
 
-            // Return success after the profile is updated
-            return Ok("Your profile has been updated successfully.");
+            // Begin transaction for atomic updates
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Update user properties
+                user.Email = model.Email switch { null => null, "" => user.Email, _ => model.Email };
+                user.FirstName = model.FirstName switch { null => null, "" => user.FirstName, _ => model.FirstName };
+                user.MiddleName = model.MiddleName switch { null => null, "" => user.MiddleName, _ => model.MiddleName };
+                user.LastName = model.LastName switch { null => null, "" => user.LastName, _ => model.LastName };
+                user.Prefix = model.Prefix switch { null => null, "" => user.Prefix, _ => model.Prefix };
+                user.Suffix = model.Suffix switch { null => null, "" => user.Suffix, _ => model.Suffix };
+                user.Nickname = model.Nickname switch { null => null, "" => user.Nickname, _ => model.Nickname };
+                user.RecoveryEmail = model.RecoveryEmail switch { null => null, "" => user.RecoveryEmail, _ => model.RecoveryEmail };
+                user.AlternaiveEmail = model.AlternaiveEmail switch { null => null, "" => user.AlternaiveEmail, _ => model.AlternaiveEmail };
+                user.RecoveryPhoneNumber = model.RecoveryPhoneNumber switch { null => null, "" => user.RecoveryPhoneNumber, _ => model.RecoveryPhoneNumber };
+                user.Gender = model.Gender switch { null => null, "" => user.Gender, _ => model.Gender };
+                user.Birthday = model.Birthday.HasValue ? model.Birthday.Value : null;
+                user.ProfilePicturePath = model.ProfilePicturePath switch { null => null, "" => user.ProfilePicturePath, _ => model.ProfilePicturePath };
+                user.CompanyName = model.CompanyName switch { null => null, "" => user.CompanyName, _ => model.CompanyName };
+                user.JobTitle = model.JobTitle switch { null => null, "" => user.JobTitle, _ => model.JobTitle };
+                user.Department = model.Department switch { null => null, "" => user.Department, _ => model.Department };
+                user.AppLanguage = model.AppLanguage switch { null => null, "" => user.AppLanguage, _ => model.AppLanguage };
+                user.Website = model.Website switch { null => null, "" => user.Website, _ => model.Website };
+                user.Linkedin = model.Linkedin switch { null => null, "" => user.Linkedin, _ => model.Linkedin };
+                user.Facebook = model.Facebook switch { null => null, "" => user.Facebook, _ => model.Facebook };
+                user.Instagram = model.Instagram switch { null => null, "" => user.Instagram, _ => model.Instagram };
+                user.Twitter = model.Twitter switch { null => null, "" => user.Twitter, _ => model.Twitter };
+                user.Github = model.Github switch { null => null, "" => user.Github, _ => model.Github };
+                user.Youtube = model.Youtube switch { null => null, "" => user.Youtube, _ => model.Youtube };
+                user.Tiktok = model.Tiktok switch { null => null, "" => user.Tiktok, _ => model.Tiktok };
+                user.Snapchat = model.Snapchat switch { null => null, "" => user.Snapchat, _ => model.Snapchat };
+                user.UpdatedAt = DateTime.Now;
+
+                var updateResult = await _userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    return BadRequest($"Error updating your profile: {string.Join(", ", updateResult.Errors.Select(e => e.Description))}");
+                }
+
+                // Handle password update
+                if (!string.IsNullOrEmpty(model.Password))
+                {
+                    var passwordRemovalResult = await _userManager.RemovePasswordAsync(user);
+                    if (!passwordRemovalResult.Succeeded)
+                    {
+                        return BadRequest($"Error removing your password: {string.Join(", ", passwordRemovalResult.Errors.Select(e => e.Description))}");
+                    }
+
+                    var addPasswordResult = await _userManager.AddPasswordAsync(user, model.Password);
+                    if (!addPasswordResult.Succeeded)
+                    {
+                        return BadRequest($"Error setting your password: {string.Join(", ", addPasswordResult.Errors.Select(e => e.Description))}");
+                    }
+                }
+
+                // Handle address update
+                if (model.Street != null || model.City != null || model.Country != null || model.AddressType != null)
+                {
+                    var userAddress = await _context.UserAddresses
+                        .Include(ua => ua.Address)
+                        .Include(ua => ua.AddressType)
+                        .FirstOrDefaultAsync(ua => ua.UserId == user.Id && ua.IsDefault == true);
+
+                    var address = userAddress?.Address ?? new Address();
+                    address.Street = model.Street switch { null => address.Street, "" => null, _ => model.Street };
+                    address.HouseNumber = model.HouseNumber switch { null => address.HouseNumber, "" => null, _ => model.HouseNumber };
+                    address.PostalCode = model.PostalCode switch { null => address.PostalCode, "" => null, _ => model.PostalCode };
+                    address.City = model.City switch { null => address.City, "" => null, _ => model.City };
+                    address.State = model.State switch { null => address.State, "" => null, _ => model.State };
+                    address.Country = model.Country switch { null => address.Country, "" => null, _ => model.Country };
+
+                    if (userAddress == null)
+                    {
+                        var addressType = await _context.AddressTypes.FirstOrDefaultAsync(at => at.AddressTypeName == model.AddressType)
+                                          ?? new AddressType { AddressTypeName = model.AddressType, Description = $"Type for {model.AddressType}" };
+
+                        if (addressType.AddressTypeId == 0)
+                        {
+                            _context.AddressTypes.Add(addressType);
+                            await _context.SaveChangesAsync();
+                        }
+
+                        userAddress = new UserAddress
+                        {
+                            UserId = user.Id,
+                            Address = address,
+                            AddressType = addressType,
+                            IsDefault = model.IsDefaultAddress ?? true,
+                            CreatedAt = DateTime.Now,
+                            UpdatedAt = DateTime.Now
+                        };
+
+                        _context.UserAddresses.Add(userAddress);
+                    }
+                    else
+                    {
+                        var addressType = await _context.AddressTypes.FirstOrDefaultAsync(at => at.AddressTypeName == model.AddressType)
+                                          ?? userAddress.AddressType;
+
+                        userAddress.AddressType = addressType;
+                        userAddress.UpdatedAt = DateTime.Now;
+                        _context.Addresses.Update(address);
+                    }
+
+                    await _context.SaveChangesAsync();
+                }
+
+                await transaction.CommitAsync();
+                return Ok("Your profile has been updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
         }
 
         // Change a user's role (accessible without Admin role but performs similar action)
