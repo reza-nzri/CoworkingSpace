@@ -1,34 +1,41 @@
-// src/app/utils/authUtils.ts
+import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import jwtDecode, { JwtPayload } from 'jwt-decode';
 
-export const isAuthenticated = (): boolean => {
-  const token = Cookies.get('jwt');
-  if (!token) return false;
-
-  try {
-    const decoded = jwtDecode<JwtPayload>(token);
-    const exp = decoded?.exp;
-    if (!exp) return false;
-
-    // Check if the token is expire
-    const now = Date.now() / 1000;
-    return exp > now;
-  } catch (error) {
-    console.error('Invalid JWT:', error);
-    return false;
-  }
+// Define a type for the custom JWT payload
+export type CustomJwtPayload = JwtPayload & {
+  role?: string;
 };
 
-export const getUserRole = (): string | null => {
-  const token = Cookies.get('jwt');
-  if (!token) return null;
+// Custom hook for handling authentication redirects
+export const useHandleAuthenticationRedirect = () => {
+  const router = useRouter();
 
-  try {
-    const decoded: any = jwtDecode(token);
-    return decoded.role || null;
-  } catch (error) {
-    console.error('Error decoding JWT:', error);
-    return null;
-  }
+  return () => {
+    const token = Cookies.get('jwt');
+
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
+    try {
+      const decoded: CustomJwtPayload = jwtDecode<CustomJwtPayload>(token);
+      const role = decoded.role;
+
+      if (!role) {
+        throw new Error('No roles assigned to this account.');
+      }
+
+      const rolePaths: Record<string, string> = {
+        Admin: '/admin',
+        NormalUser: '/profile',
+      };
+
+      router.push(rolePaths[role] || '/');
+    } catch (error) {
+      console.error('Invalid or expired token:', error);
+      router.push('/login'); // Redirect to login if token is invalid
+    }
+  };
 };
