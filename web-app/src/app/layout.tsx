@@ -6,6 +6,9 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
 import Navbar from './components/layout/navbar/Navbar';
 import Footer from './components/layout/Footer';
+import PrivateRoute from '@/app/api/PrivateRoute';
+
+const publicRoutes = ['/login', '/register', '/', '/error403'];
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -45,6 +48,12 @@ export default function RootLayout({
           rel="apple-touch-icon"
           href="/media/images/logos/desk_logo/desk_logo_1.svg"
         />
+        <link
+          rel="preload"
+          href="/media/images/logos/desk_logo/text_desk_logo_1.svg"
+          as="image"
+          type="image/svg+xml"
+        />
         <meta name="theme-color" content="#000000" />
       </head>
       <body
@@ -52,7 +61,9 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <Navbar />
-        <main>{children}</main>
+        <PrivateRoute publicRoutes={publicRoutes}>
+          <main>{children}</main>
+        </PrivateRoute>
         <Footer />
       </body>
     </html>

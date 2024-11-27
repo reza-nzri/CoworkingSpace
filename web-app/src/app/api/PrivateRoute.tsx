@@ -4,48 +4,62 @@
 import React, { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Cookies from 'js-cookie';
-import { jwtDecode } from 'jwt-decode';
+import { jwtDecode, JwtPayload } from 'jwt-decode';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
-  requiredRole?: string; // Optional role-based protection
+  publicRoutes?: string[];
 }
 
 interface CustomJwtPayload extends JwtPayload {
-  role?: string; // Extend JwtPayload with custom claims
+  role?: string;
 }
+
+const roleAccess = {
+  Admin: ['/admin', '/profile', '/booking', '/mybookings', '/ceo', '/company'],
+  CEO: ['/ceo', '/booking', '/mybookings', '/company'],
+  NormalUser: ['/profile', '/booking', '/mybookings'],
+};
 
 const PrivateRoute: React.FC<PrivateRouteProps> = ({
   children,
-  requiredRole,
+  publicRoutes = [],
 }) => {
   const router = useRouter();
-  const pathname = usePathname(); // Get the current path
+  const pathname = usePathname();
 
   useEffect(() => {
-    const publicRoutes = ['/login', '/register'];
     const token = Cookies.get('jwt');
 
-    // Allow public routes to bypass protection
-    if (publicRoutes.includes(pathname)) {
-      return;
-    }
-
-    // Redirect to login if no token exists
-    if (!token) {
+    if (!token && !publicRoutes.includes(pathname)) {
       router.push('/login');
       return;
     }
 
-    // Decode the token and check for role-based protection
-    const decoded: CustomJwtPayload = jwtDecode<CustomJwtPayload>(token);
-    if (requiredRole && decoded?.role !== requiredRole) {
-      router.push('/errors/Error403'); // Redirect to a 403 error page
-      return;
-    }
-  }, [pathname, router, requiredRole]);
+    if (token) {
+      const decoded: CustomJwtPayload = jwtDecode<CustomJwtPayload>(token);
+      const userRole = decoded.role;
 
-  return <>{children}</>; // Render children if access is granted
+      if (publicRoutes.includes(pathname)) {
+        router.push('/profile');
+        return;
+      }
+
+      const allowedRoutes =
+        roleAccess[userRole as keyof typeof roleAccess] || [];
+      if (!allowedRoutes.includes(pathname)) {
+        router.push('/error403');
+        return;
+      }
+    }
+  }, [pathname, publicRoutes, router]);
+
+  const token = Cookies.get('jwt');
+  if (!token && !publicRoutes.includes(pathname)) {
+    return null;
+  }
+
+  return <>{children}</>;
 };
 
 export default PrivateRoute;

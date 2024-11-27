@@ -7,11 +7,12 @@ const Error403: React.FC = () => {
   const router = useRouter();
 
   const handleRedirect = () => {
+    console.log('Redirecting to /login'); // Debugging log
     router.push('/login');
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+    <div className="min-h-screen flex items-center justify-center text-white">
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4">403 - Access Denied</h1>
         <p className="text-lg mb-6">

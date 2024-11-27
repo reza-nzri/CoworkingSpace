@@ -1,6 +1,6 @@
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import jwtDecode, { JwtPayload } from 'jwt-decode';
+import { jwtDecode, JwtPayload } from 'jwt-decode';
 
 // Define a type for the custom JWT payload
 export type CustomJwtPayload = JwtPayload & {

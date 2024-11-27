@@ -3,7 +3,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser } from '@fortawesome/free-solid-svg-icons';
+import {
+  faUser,
+  faCalendarAlt,
+  faSignOutAlt,
+} from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 
@@ -47,18 +51,20 @@ const ProfileMenu: React.FC = () => {
 
       {/* Dropdown Menu */}
       {isLoggedIn && menuOpen && (
-        <div className="absolute top-10 right-0 bg-white dark:bg-gray-800 shadow-md rounded z-10 w-40">
+        <div className="absolute top-10 right-0 bg-white dark:bg-gray-800 shadow-md rounded z-10 w-48">
           <button
             onClick={() => handleNavigation('/profile')}
-            className="block px-14 py-2 text-left w-full hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="flex items-center gap-3 px-6 py-2 text-left w-full hover:bg-gray-100 dark:hover:bg-gray-700"
           >
-            My Profile
+            <FontAwesomeIcon icon={faUser} />
+            <span>My Profile</span>
           </button>
           <button
             onClick={() => handleNavigation('/mybookings')}
-            className="block px-14 py-2 text-left w-full hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="flex items-center gap-3 px-6 py-2 text-left w-full hover:bg-gray-100 dark:hover:bg-gray-700"
           >
-            My Bookings
+            <FontAwesomeIcon icon={faCalendarAlt} />
+            <span>My Bookings</span>
           </button>
           <button
             onClick={() => {
@@ -66,9 +72,10 @@ const ProfileMenu: React.FC = () => {
               setIsLoggedIn(false); // Update login state
               handleNavigation('/login'); // Redirect to login
             }}
-            className="block px-14 py-2 text-left w-full text-red-500 hover:bg-red-100 dark:hover:bg-red-700"
+            className="flex items-center gap-3 px-6 py-2 text-left w-full text-red-500 hover:bg-red-100 dark:hover:bg-red-700"
           >
-            Logout
+            <FontAwesomeIcon icon={faSignOutAlt} />
+            <span>Logout</span>
           </button>
         </div>
       )}

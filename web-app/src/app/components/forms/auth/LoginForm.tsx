@@ -5,8 +5,9 @@ import { loginUser } from '@/app/api/authApi'; // Function to handle the API cal
 import Cookies from 'js-cookie'; // To store the JWT token in cookies.
 import { useRouter } from 'next/navigation'; // For navigating to different routes after login.
 import MessageBox from '@/app/components/common/MessageBox'; // Custom component to display messages.
-import PasswordInput from './PasswordInput'; // Custom input field component for password input.
 import { jwtDecode, JwtPayload } from 'jwt-decode';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
 
 // Define the LoginForm component using TypeScript and React Functional Component syntax.
@@ -17,6 +18,7 @@ const LoginForm: React.FC = () => {
   const [message, setMessage] = useState<string | null>(null); // State for any error/success messages.
   const [statusCode, setStatusCode] = useState<number | null>(null); // State to store the status code of the response.
   const router = useRouter(); // Next.js hook to programmatically navigate between pages.
+  const [showPassword, setShowPassword] = useState(false);
 
   // Handles the form submission for logging in.
   const handleLogin = async (e: React.FormEvent) => {
@@ -43,7 +45,7 @@ const LoginForm: React.FC = () => {
 
       // Access claims like `role` or `sub` from the token
       // Extract role from the decoded JWT
-      const role = decoded?.role;
+      const role = decoded && 'role' in decoded ? decoded.role : null;
       if (!role) {
         throw new Error('No roles assigned to this account.');
       }
@@ -93,16 +95,37 @@ const LoginForm: React.FC = () => {
             className="block w-full px-4 py-2 mt-1 bg-gray-800 text-white border rounded-md focus:ring focus:ring-blue-500 focus:outline-none"
           />
         </div>
+
         {/* Password field */}
         <div>
           <label htmlFor="password" className="block text-sm font-medium">
             Password
           </label>
-          <PasswordInput
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              id="login-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="block w-full px-4 py-2 border rounded-md bg-gray-800 text-white focus:ring focus:ring-blue-500 focus:outline-none"
+              autoComplete="current-password"
+              required
+            />
+
+            <button
+              type="button"
+              onClick={() => {
+                // console.log('Password visibility toggled'); // Debugging
+                setShowPassword((prev) => !prev);
+              }}
+              className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-400 cursor-pointer focus:ring focus:ring-blue-500"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+            </button>
+          </div>
         </div>
+
         {/* Remember Me checkbox */}
         <div className="flex items-center">
           <input

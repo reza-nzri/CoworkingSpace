@@ -1,6 +1,6 @@
 import type { NextConfig } from 'next';
 
-export const publicRoutes = ['/login', '/register'];
+export const publicRoutes = ['/login', '/register', '/', '/error403'];
 
 const nextConfig: NextConfig = {
   env: {

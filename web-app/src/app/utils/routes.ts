@@ -9,6 +9,7 @@ const ROUTES = {
   LOGIN: '/login',
   REGISTER: '/register',
   COMPANY: '/company',
+  ERROR403: '/error403',
 };
 
 export default ROUTES;

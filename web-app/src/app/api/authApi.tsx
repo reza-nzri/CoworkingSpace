@@ -43,7 +43,7 @@ export const registerUser = async (
       `${API_BASE_URL}/Auth/register-user`,
       userData
     );
-    console.log('Registration successful, response data:', response.data);
+    // console.log('Registration successful, response data:', response.data);
     return response;
   } catch (error: unknown) {
     const axiosError = error as AxiosError;
