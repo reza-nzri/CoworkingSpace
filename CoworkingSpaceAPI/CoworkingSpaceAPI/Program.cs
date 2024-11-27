@@ -79,7 +79,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowLocalNetwork", // Define a CORS policy named "AllowLocalhost"
         builder =>
         {
-            builder.WithOrigins("http://localhost:4892", "https://localhost:4891", "https://0.0.0.0:7198"); // Allow frontend URL origins
+            builder.WithOrigins("http://localhost:7198", "https://localhost:3050"); // Allow frontend URL origins
             builder.AllowAnyOrigin()
                    .AllowAnyHeader() // Allow any headers in CORS requests
                    .AllowAnyMethod(); // Allow any HTTP methods
@@ -171,7 +171,8 @@ builder.Services.AddAuthorizationBuilder()
                              .AddPolicy("Moderator", policy => policy.RequireRole("Moderator"))
                              .AddPolicy("Developer", policy => policy.RequireRole("Developer"))
                              .AddPolicy("Tester", policy => policy.RequireRole("Tester"))
-                             .AddPolicy("DataScientist", policy => policy.RequireRole("DataScientist"));
+                             .AddPolicy("DataScientist", policy => policy.RequireRole("DataScientist"))
+                             .AddPolicy("DataScientist", policy => policy.RequireRole("CEO"));
 
 // Add Scoped services
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>(); // Add JwtTokenService to the service collection with Scoped lifetime
@@ -189,7 +190,7 @@ if (app.Environment.IsDevelopment()) // Check if the application is in developme
 using (var scope = app.Services.CreateScope()) // Create a scope for dependency injection
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>(); // Get the RoleManager service
-    var roles = new[] { "Admin", "NormalUser", "SuperAdmin", "Moderator", "TeamLead", "Developer", "Tester", "Guest", "DataScientist" }; // Define a list of roles
+    var roles = new[] { "Admin", "NormalUser", "SuperAdmin", "Moderator", "TeamLead", "Developer", "Tester", "Guest", "DataScientist", "CEO" }; // Define a list of roles
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role)) // Check if the role exists
