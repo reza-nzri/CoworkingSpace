@@ -13,7 +13,9 @@ const languages = [
 const LanguageDropdown: React.FC = () => {
   const [selected, setSelected] = useState(() => {
     const savedLanguage = Cookies.get('language');
-    return languages.find((lang) => lang.code === savedLanguage) || languages[0];
+    return (
+      languages.find((lang) => lang.code === savedLanguage) || languages[0]
+    );
   });
   const [isOpen, setIsOpen] = useState(false);
 
@@ -21,7 +23,7 @@ const LanguageDropdown: React.FC = () => {
     setIsOpen((prev) => !prev);
   };
 
-  const handleSelectLanguage = (lang: typeof languages[0]) => {
+  const handleSelectLanguage = (lang: (typeof languages)[0]) => {
     setSelected(lang);
     Cookies.set('language', lang.code, { expires: 365 }); // Save to cookies for 1 year
     setIsOpen(false);
@@ -54,7 +56,7 @@ const LanguageDropdown: React.FC = () => {
             <button
               key={lang.code}
               onClick={() => handleSelectLanguage(lang)}
-              className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left"
+              className="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left dark:text-white text-black"
             >
               <Image
                 src={lang.flag}

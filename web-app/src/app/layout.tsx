@@ -5,6 +5,7 @@ import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
 import Navbar from './components/layout/navbar/Navbar';
+import Footer from './components/layout/Footer';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -52,6 +53,7 @@ export default function RootLayout({
       >
         <Navbar />
         <main>{children}</main>
+        <Footer />
       </body>
     </html>
   );

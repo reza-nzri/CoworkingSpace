@@ -18,9 +18,9 @@ interface LoginUserData {
 }
 
 interface LoginResponse {
-  Token: string;
-  Roles: string[];
-  Message?: string;
+  token: string; // Updated to lowercase "token"
+  roles: string[]; // Updated to lowercase "roles"
+  message?: string; // Updated to lowercase "message"
 }
 
 // Define a generic Axios error type
@@ -60,21 +60,13 @@ export const loginUser = async (
   loginData: LoginUserData
 ): Promise<LoginResponse> => {
   try {
-    console.log('Attempting to log in with data:', loginData);
+    // console.log('Attempting to log in with data:', loginData);
     const response = await axios.post<LoginResponse>(
       `${API_BASE_URL}/Auth/user-login`,
       loginData
     );
 
-    const { Token, Roles, Message } = response.data;
-
-    if (Token) {
-      console.log('Login successful, JWT Token received:', Token);
-    } else {
-      console.warn('Login successful, but no token returned.');
-    }
-
-    return { Token, Roles, Message };
+    return response.data; // Return the response data directly
   } catch (error: unknown) {
     const axiosError = error as AxiosError;
     console.error(

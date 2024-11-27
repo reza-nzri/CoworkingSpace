@@ -24,12 +24,13 @@ const checkAuth = (allowedRoles) => {
     // console.log('Decoded payload:', payload); // Log the decoded payload for debugging
 
     // Check if roles are defined in the payload
-    const roles = payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+    const roles =
+      payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
     if (!roles) {
       console.warn('No roles found in token payload.'); // Log warning for no roles
       return null; // Return null if no roles found
     }
-    return allowedRoles.some(role => roles.split(',').includes(role));
+    return allowedRoles.some((role) => roles.split(',').includes(role));
   } catch (error) {
     console.error('Error decoding token:', error);
     return null; // Return null if decoding fails
@@ -44,7 +45,9 @@ const PrivateRoute = ({ allowedRoles, children }) => {
     alert('You are not logged in. Redirecting to login page.'); // Alert for unauthenticated users
     return <Navigate to="/login" />; // Redirect to login if not authenticated
   } else if (!authStatus) {
-    alert('You do not have the necessary permissions. Redirecting to login page.'); // Alert for unauthorized users
+    alert(
+      'You do not have the necessary permissions. Redirecting to login page.'
+    ); // Alert for unauthorized users
     return <Navigate to="/login" />; // Redirect to login for users without appropriate role
   }
 

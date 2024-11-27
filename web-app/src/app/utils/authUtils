@@ -1,0 +1,34 @@
+// src/app/utils/authUtils.ts
+import Cookies from 'js-cookie';
+import jwtDecode, { JwtPayload } from 'jwt-decode';
+
+export const isAuthenticated = (): boolean => {
+  const token = Cookies.get('jwt');
+  if (!token) return false;
+
+  try {
+    const decoded = jwtDecode<JwtPayload>(token);
+    const exp = decoded?.exp;
+    if (!exp) return false;
+
+    // Check if the token is expire
+    const now = Date.now() / 1000;
+    return exp > now;
+  } catch (error) {
+    console.error('Invalid JWT:', error);
+    return false;
+  }
+};
+
+export const getUserRole = (): string | null => {
+  const token = Cookies.get('jwt');
+  if (!token) return null;
+
+  try {
+    const decoded: any = jwtDecode(token);
+    return decoded.role || null;
+  } catch (error) {
+    console.error('Error decoding JWT:', error);
+    return null;
+  }
+};

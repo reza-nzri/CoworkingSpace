@@ -17,7 +17,9 @@ const config = {
     'postcss-import': {},
 
     // CSS Nano for optimizing the output CSS in production
-    ...(process.env.NODE_ENV === 'production' ? { cssnano: { preset: 'default' } } : {}),
+    ...(process.env.NODE_ENV === 'production'
+      ? { cssnano: { preset: 'default' } }
+      : {}),
   },
 };
 
