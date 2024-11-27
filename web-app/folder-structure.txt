@@ -4,6 +4,9 @@ CoworkingSpace/web-app/
   ├─ public/
   │  └─ media/
   │     └─ images/
+  │        ├─ flags/
+  │        │  ├─ de.png
+  │        │  └─ us.png
   │        └─ logos/
   │           └─ desk_logo/
   │              ├─ desk_logo_1.svg
@@ -11,24 +14,32 @@ CoworkingSpace/web-app/
   ├─ src/
   │  └─ app/
   │     ├─ api/
-  │     │  ├─ authApi.js
+  │     │  ├─ authApi.tsx
   │     │  └─ PrivateRoute.js
   │     ├─ components/
   │     │  ├─ common/
   │     │  │  ├─ Button.tsx
   │     │  │  ├─ Input.tsx
   │     │  │  ├─ LogoutButton.js
+  │     │  │  ├─ MessageBox.tsx
   │     │  │  ├─ Modal.tsx
   │     │  │  └─ Tooltip.tsx
   │     │  ├─ forms/
+  │     │  │  ├─ auth/
+  │     │  │  │  ├─ LoginForm.tsx
+  │     │  │  │  ├─ PasswordInput.tsx
+  │     │  │  │  └─ RegisterForm.tsx
   │     │  │  ├─ CompanyForm.tsx
-  │     │  │  ├─ LoginForm.tsx
-  │     │  │  ├─ ProfileForm.tsx
-  │     │  │  └─ RegisterForm.tsx
+  │     │  │  └─ ProfileForm.tsx
   │     │  ├─ layout/
+  │     │  │  ├─ navbar/
+  │     │  │  │  ├─ LanguageDropdown.tsx
+  │     │  │  │  ├─ Navbar.module.css
+  │     │  │  │  ├─ Navbar.tsx
+  │     │  │  │  ├─ ProfileMenu.tsx
+  │     │  │  │  └─ ThemeSwitch.tsx
   │     │  │  ├─ Footer.tsx
   │     │  │  ├─ Header.tsx
-  │     │  │  ├─ Navbar.tsx
   │     │  │  └─ Sidebar.tsx
   │     │  └─ maps/
   │     │     └─ RoomMap.tsx
@@ -44,13 +55,18 @@ CoworkingSpace/web-app/
   │     │  ├─ admin/
   │     │  │  ├─ index.tsx
   │     │  │  └─ roles.tsx
+  │     │  ├─ booking/
+  │     │  │  └─ index.tsx
+  │     │  ├─ ceo/
+  │     │  │  └─ index.tsx
   │     │  ├─ company/
   │     │  │  ├─ index.tsx
   │     │  │  └─ new.tsx
+  │     │  ├─ normal-user/
+  │     │  │  └─ index.tsx
   │     │  ├─ profile/
   │     │  │  ├─ index.tsx
   │     │  │  └─ settings.tsx
-  │     │  ├─ index.tsx
   │     │  ├─ login.tsx
   │     │  └─ register.tsx
   │     ├─ services/
@@ -67,11 +83,15 @@ CoworkingSpace/web-app/
   │     │  └─ themes.css
   │     ├─ utils/
   │     │  ├─ authUtils.js
-  │     │  └─ cookieUtils.js
+  │     │  ├─ cookieUtils.js
+  │     │  ├─ routes.ts
+  │     │  └─ themeUtils.ts
   │     ├─ layout.tsx
   │     └─ page.tsx
   ├─ .eslintrc.json
   ├─ .gitignore
+  ├─ .prettierignore
+  ├─ .prettierrc.json
   ├─ folder-structure.txt
   ├─]next-env.d.ts (ignored)
   ├─ next.config.ts
