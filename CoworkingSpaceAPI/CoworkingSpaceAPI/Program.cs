@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Identity; // Import Identity for user and role manage
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text; // Import for encoding JWT secret key
 
 var builder = WebApplication.CreateBuilder(args); // Create a builder for the web application
@@ -22,7 +24,14 @@ Env.Load(".env");
 //});
 
 // Add services to the container
-builder.Services.AddControllers(); // Add controllers to handle API routes
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+        options.JsonSerializerOptions.WriteIndented = true; // Optional: For better formatting in responses
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
+
 builder.Services.AddEndpointsApiExplorer(); // Add API explorer for endpoints
 
 builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
@@ -76,13 +85,13 @@ builder.Services.AddSwaggerGen(c =>
 // Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowLocalNetwork", // Define a CORS policy named "AllowLocalhost"
+    options.AddPolicy("AllowLocalNetwork", // Define a CORS policy named "AllowLocalNetwork"
         builder =>
         {
-            builder.WithOrigins("http://localhost:7198", "https://localhost:3050"); // Allow frontend URL origins
-            builder.AllowAnyOrigin()
-                   .AllowAnyHeader() // Allow any headers in CORS requests
-                   .AllowAnyMethod(); // Allow any HTTP methods
+            builder.WithOrigins("http://localhost:3050") // Allow specific frontend URL origin
+                   .AllowAnyHeader()    // Allow any headers in CORS requests
+                   .AllowAnyMethod()    // Allow any HTTP methods
+                   .AllowCredentials(); // Allow cookies to be sent
         });
 });
 
@@ -134,6 +143,8 @@ var tokenValidationParams = new TokenValidationParameters // Set up token valida
     ValidateAudience = true, // Validate the token's audience
     ValidAudience = jwtAudience, // Set the valid audience
     ValidateLifetime = true, // Ensure the token has not expired
+    RoleClaimType = ClaimTypes.Role, // Map roles from the JWT
+    NameClaimType = JwtRegisteredClaimNames.Sub,  // Map user ID from the JWT
 };
 
 // Add Authentication
@@ -184,6 +195,7 @@ if (app.Environment.IsDevelopment()) // Check if the application is in developme
 {
     app.UseSwagger(); // Enable Swagger for API documentation
     app.UseSwaggerUI(); // Enable the Swagger UI
+    app.UseDeveloperExceptionPage(); // Enables detailed error pages
 }
 
 // Create roles on startup
@@ -200,6 +212,7 @@ using (var scope = app.Services.CreateScope()) // Create a scope for dependency 
     }
 }
 
+// Add the middleware to the pipeline
 app.UseHttpsRedirection(); // Redirect all HTTP requests to HTTPS
 
 app.UseCors("AllowLocalNetwork"); // use the CORS policy defined earlier

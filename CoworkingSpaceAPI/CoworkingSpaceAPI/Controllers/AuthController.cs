@@ -1,8 +1,12 @@
 ﻿using CoworkingSpaceAPI.Dtos.Auth.Request; // Import the request DTOs for authentication
 using CoworkingSpaceAPI.Models; // Import the ApplicationUserModel for user-related actions
 using CoworkingSpaceAPI.Services.JwtToken; // Import the JwtTokenService for handling JWT tokens
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity; // Import Identity namespace for user and role management
 using Microsoft.AspNetCore.Mvc; // Import namespace for ASP.NET Core MVC functionality
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 
 namespace CoworkingSpaceAPI.Controllers // Define the namespace for the AuthController
 {
@@ -12,11 +16,13 @@ namespace CoworkingSpaceAPI.Controllers // Define the namespace for the AuthCont
     {
         private readonly UserManager<ApplicationUserModel> _userManager; // Dependency injection for managing users
         private readonly IJwtTokenService _jwtTokenService; // Dependency injection for handling JWT token generation
+        private readonly IConfiguration _configuration;
 
-        public AuthController(UserManager<ApplicationUserModel> userManager, IJwtTokenService jwtTokenService) // Constructor to inject the services
+        public AuthController(UserManager<ApplicationUserModel> userManager, IJwtTokenService jwtTokenService, IConfiguration configuration) // Constructor to inject the services
         {
             _userManager = userManager; // Initialize UserManager
             _jwtTokenService = jwtTokenService; // Initialize JwtTokenService
+            _configuration = configuration;
         }
 
         [HttpPost("register-user")] // Define an HTTP POST endpoint for registering a user
@@ -76,6 +82,78 @@ namespace CoworkingSpaceAPI.Controllers // Define the namespace for the AuthCont
 
             var userRoles = await _userManager.GetRolesAsync(user); // Retrieve the roles assigned to the user
             return Ok(new { Token = token, Message = "Login successful." }); // Return success response with the token and roles
+        }
+
+        // Endpoint to verify the validity of a JWT
+        [HttpGet("validate-jwt")]
+        [Authorize]
+        public IActionResult ValidateJwt()
+        {
+            try
+            {
+                // Extract the token from the Authorization header
+                var authHeader = Request.Headers["Authorization"].ToString();
+                if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 400,
+                        Message = "Authorization header is missing or invalid."
+                    });
+                }
+
+                var token = authHeader.Substring(7); // Remove "Bearer " from the header
+                var tokenHandler = new JwtSecurityTokenHandler();
+
+                // Decode and validate the token
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = _configuration["Jwt:Issuer"], // Read from appsettings.json
+                    ValidAudience = _configuration["Jwt:Audience"], // Read from appsettings.json
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]))
+                };
+
+                tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+
+                // Extract claims and return success
+                var jwtToken = validatedToken as JwtSecurityToken;
+                var username = jwtToken?.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Message = "JWT is valid.",
+                    Username = username
+                });
+            }
+            catch (SecurityTokenExpiredException)
+            {
+                return Unauthorized(new
+                {
+                    StatusCode = 401,
+                    Message = "JWT has expired. Please log in again."
+                });
+            }
+            catch (SecurityTokenException)
+            {
+                return Unauthorized(new
+                {
+                    StatusCode = 401,
+                    Message = "JWT is invalid. Please provide a valid token."
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    StatusCode = 500,
+                    Message = "An error occurred while validating the token.",
+                    Details = ex.Message
+                });
+            }
         }
     }
 }

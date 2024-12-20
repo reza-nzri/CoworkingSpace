@@ -198,18 +198,50 @@ namespace CoworkingSpaceAPI.Controllers
 
         // Allows a user to delete their own account
         [HttpDelete("delete-my-account")]
-        public async Task<IActionResult> DeleteMyAccount([FromBody] string username)
+        public async Task<IActionResult> DeleteMyAccount()
         {
-            var user = await _userManager.FindByNameAsync(username); // Find the user by username
-            if (user == null)
-                return NotFound("User not found."); // Return not found if user doesn't exist
+            // Extract username from JWT
+            var username = User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-            var result = await _userManager.DeleteAsync(user); // Attempt to delete the user
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return Unauthorized(new
+                {
+                    StatusCode = 401,
+                    Message = "User identity cannot be determined."
+                });
+            }
+
+            // Find the user by username
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return NotFound(new
+                {
+                    StatusCode = 404,
+                    Message = "User not found."
+                });
+            }
+
+            // Attempt to delete the user
+            var result = await _userManager.DeleteAsync(user);
+
             if (result.Succeeded)
-                return Ok("Your account has been deleted successfully."); // Return success if deletion is successful
+            {
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Message = "Your account has been deleted successfully."
+                });
+            }
 
             // Return any errors encountered during deletion
-            return BadRequest(result.Errors.Select(e => e.Description));
+            return BadRequest(new
+            {
+                StatusCode = 400,
+                Message = "An error occurred while deleting the account.",
+                Errors = result.Errors.Select(e => e.Description).ToList()
+            });
         }
 
         // Deletes all users (function similar to an admin's action but without authorization required)
@@ -227,6 +259,72 @@ namespace CoworkingSpaceAPI.Controllers
             }
 
             return Ok("All users deleted successfully."); // Return success after all users are deleted
+        }
+
+        [HttpPut("user/update-profile")]
+        public async Task<IActionResult> UpdateUserProfile([FromBody] UserDetailsUpdatedDto model)
+        {
+            var username = User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return BadRequest(new { StatusCode = 400, Message = "Username cannot be determined from the token." });
+            }
+
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return NotFound(new { StatusCode = 404, Message = "User not found." });
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                // Map UserDetailsDto to user entity
+                _mapper.Map(model, user);
+
+                var userUpdateResult = await _userManager.UpdateAsync(user);
+                if (!userUpdateResult.Succeeded)
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 400,
+                        Message = $"Failed to update user profile: {string.Join(", ", userUpdateResult.Errors.Select(e => e.Description))}"
+                    });
+                }
+
+                // Map Address if provided
+                if (model.Street != null || model.City != null || model.Country != null || model.AddressType != null)
+                {
+                    var address = await _context.UserAddresses
+                        .Include(ua => ua.Address)
+                        .Include(ua => ua.AddressType)
+                        .FirstOrDefaultAsync(ua => ua.UserId == user.Id && (ua.IsDefault ?? false))
+                        ?? new UserAddress { UserId = user.Id, Address = new Address(), IsDefault = true, CreatedAt = DateTime.UtcNow };
+
+                    _mapper.Map(model, address.Address);
+                    if (!string.IsNullOrWhiteSpace(model.AddressType))
+                    {
+                        var addressType = await _context.AddressTypes.FirstOrDefaultAsync(at => at.AddressTypeName == model.AddressType)
+                            ?? new AddressType { AddressTypeName = model.AddressType };
+                        address.AddressType = addressType;
+                    }
+                    address.UpdatedAt = DateTime.UtcNow;
+
+                    _context.UserAddresses.Update(address);
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new { StatusCode = 200, Message = "User profile updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, new { StatusCode = 500, Message = $"An error occurred: {ex.Message}" });
+            }
         }
 
         // Admin updates a user by username (+ role)

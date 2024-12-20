@@ -40,7 +40,7 @@ namespace CoworkingSpaceAPI.Services.JwtToken // Define the service namespace
             };
 
             // Add roles as claims
-            claims.AddRange(roles.Select(role => new Claim("role", role))); // Add each user role as a claim
+            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var jwtKey = _configuration["Jwt:Key"];
 

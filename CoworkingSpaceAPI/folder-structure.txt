@@ -19,7 +19,6 @@ CoworkingSpace/CoworkingSpaceAPI/
   │  │  │  │  ├─ demo_data/
   │  │  │  │  │  └─ 01_demo_data.sql
   │  │  │  │  ├─ dummy_data/
-  │  │  │  │  │  └─ dymmy_data.sql
   │  │  │  │  └─ initial_data/
   │  │  │  │     └─ initials_records.sql
   │  │  │  ├─ stored-procedure/
@@ -37,20 +36,30 @@ CoworkingSpace/CoworkingSpaceAPI/
   │  │     ├─ 1.0_backup_20241105_140000.sql
   │  │     └─ ddl_schema_backup_20241123_222100.sql
   │  ├─ Dtos/
-  │  │  └─ Auth/
+  │  │  ├─ Auth/
+  │  │  │  ├─ Request/
+  │  │  │  │  ├─ AdminUpdateUserDto.cs
+  │  │  │  │  ├─ ChangeUserRoleRequestDto.cs
+  │  │  │  │  ├─ LoginRequestDto.cs
+  │  │  │  │  ├─ RegisterRequestDto.cs
+  │  │  │  │  ├─ TokenRequestDto.cs
+  │  │  │  │  ├─ UserDetailsUpdatedDto.cs
+  │  │  │  │  └─ UserProfileUpdateDto.cs
+  │  │  │  ├─ Response/
+  │  │  │  │  ├─ ClaimDto.cs
+  │  │  │  │  ├─ LoginResponseDto.cs
+  │  │  │  │  ├─ RefreshTokenResponseDto.cs
+  │  │  │  │  ├─ RegisterResponseDto.cs
+  │  │  │  │  └─ UserDetailsDto.cs
+  │  │  │  └─ AuthResult.cs
+  │  │  └─ Company/
   │  │     ├─ Request/
-  │  │     │  ├─ AdminUpdateUserDto.cs
-  │  │     │  ├─ ChangeUserRoleRequestDto.cs
-  │  │     │  ├─ LoginRequestDto.cs
-  │  │     │  ├─ RegisterRequestDto.cs
-  │  │     │  ├─ TokenRequestDto.cs
-  │  │     │  └─ UserProfileUpdateDto.cs
-  │  │     ├─ Response/
-  │  │     │  ├─ ClaimDto.cs
-  │  │     │  ├─ LoginResponseDto.cs
-  │  │     │  ├─ RefreshTokenResponseDto.cs
-  │  │     │  └─ RegisterResponseDto.cs
-  │  │     └─ AuthResult.cs
+  │  │     │  └─ RegisterCompanyReqDto.cs
+  │  │     └─ Response/
+  │  │        ├─ AdminCompanyDto.cs
+  │  │        └─ ResponseCompanyDto.cs
+  │  ├─ Mapping/
+  │  │  └─ UserProfileMappingProfile.cs
   │  ├─ Migrations/
   │  │  ├─ 20241123202540_init.cs
   │  │  ├─ 20241123202540_init.Designer.cs
