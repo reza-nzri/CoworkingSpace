@@ -1,7 +1,7 @@
 'use client'; // This directive is required to enable client-side rendering for this component.
 
-import React, { useState } from 'react';
-import { loginUser } from '@/app/api/authApi'; // Function to handle the API call for user login.
+import React, { useState, useEffect } from 'react';
+import { loginUser, validateJWT } from '@/app/api/authApi'; // Function to handle the API call for user login.
 import Cookies from 'js-cookie'; // To store the JWT token in cookies.
 import { useRouter } from 'next/navigation'; // For navigating to different routes after login.
 import MessageBox from '@/app/components/common/MessageBox'; // Custom component to display messages.
@@ -19,6 +19,29 @@ const LoginForm: React.FC = () => {
   const [statusCode, setStatusCode] = useState<number | null>(null); // State to store the status code of the response.
   const router = useRouter(); // Next.js hook to programmatically navigate between pages.
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const checkJWT = async () => {
+      const token = Cookies.get('jwt');
+      if (token) {
+        try {
+          const response = await validateJWT(token);
+          if (response.statusCode === 200) {
+            router.push('/profile'); // Redirect to the profile page if the JWT is valid
+          }
+        } catch (error: unknown) {
+          if (error instanceof Error) {
+            console.error('JWT validation failed:', error.message);
+          } else {
+            console.error('JWT validation failed: Unknown error occurred.');
+          }
+          Cookies.remove('jwt');
+        }
+      }
+    };
+
+    checkJWT();
+  }, [router]);
 
   // Handles the form submission for logging in.
   const handleLogin = async (e: React.FormEvent) => {
@@ -45,18 +68,21 @@ const LoginForm: React.FC = () => {
 
       // Access claims like `role` or `sub` from the token
       // Extract role from the decoded JWT
-      const role = decoded && 'role' in decoded ? decoded.role : null;
-      if (!role) {
+      const roles = decoded && 'role' in decoded ? decoded.role : [];
+      if (!Array.isArray(roles) || roles.length === 0) {
         throw new Error('No roles assigned to this account.');
       }
-      // console.log('User role:', role);
-
+      
       // Determine the user's role and navigate to the corresponding page.
       const rolePaths: Record<string, string> = {
         Admin: '/admin',
         NormalUser: '/profile',
+        CEO: '/ceo',
       };
-      router.push(rolePaths[role] || '/'); // Navigate to the role-specific route or the homepage.
+      
+      // Find the first valid role with a matching path
+      const userRoute = roles.find((role) => rolePaths[role]) || '/';
+      router.push(userRoute); // Navigate to the route based on the first matching role.      
     } catch (error: unknown) {
       // Catch any errors and display an error message.
       if (error instanceof Error) {

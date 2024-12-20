@@ -1,4 +1,3 @@
-// src/app/api/PrivateRoute.tsx
 'use client';
 
 import React, { useEffect } from 'react';
@@ -13,7 +12,7 @@ interface PrivateRouteProps {
 }
 
 interface CustomJwtPayload extends JwtPayload {
-  role?: string;
+  role?: string[]; // Role is now an array of strings
 }
 
 const roleAccess = {
@@ -32,26 +31,43 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
   useEffect(() => {
     const token = Cookies.get('jwt');
 
-    if (!token && !publicRoutes.includes(pathname)) {
-      router.push('/login');
+    if (!token) {
+      if (!publicRoutes.includes(pathname)) {
+        router.push('/login');
+      }
       return;
     }
 
     if (token) {
-      const decoded: CustomJwtPayload = jwtDecode<CustomJwtPayload>(token);
-      const userRole = decoded.role;
+      try {
+        const decoded: CustomJwtPayload = jwtDecode<CustomJwtPayload>(token);
+        const userRoles = decoded.role;
 
-      // Allow access to public routes for all users
-      if (publicRoutes.includes(pathname)) {
-        return;
-      }
+        // Allow access to public routes for all users
+        if (publicRoutes.includes(pathname)) {
+          return;
+        }
 
-      // Check role-based access for private routes
-      const allowedRoutes =
-        roleAccess[userRole as keyof typeof roleAccess] || [];
-      if (!allowedRoutes.includes(pathname)) {
-        router.push('/error403');
-        return;
+        // Check if the user has any roles that grant access to the current route
+        if (Array.isArray(userRoles)) {
+          const hasAccess = userRoles.some((role) => {
+            const allowedRoutes = roleAccess[role as keyof typeof roleAccess] || [];
+            return allowedRoutes.includes(pathname);
+          });
+
+          if (!hasAccess) {
+            router.push('/error403');
+            return;
+          }
+        } else {
+          console.error('Invalid roles in JWT payload.');
+          Cookies.remove('jwt'); // Clear invalid token
+          router.push('/login');
+        }
+      } catch (error: unknown) {
+        console.error('Error decoding JWT:', error instanceof Error ? error.message : 'Unknown error');
+        Cookies.remove('jwt'); // Clear the invalid token
+        router.push('/login'); // Redirect to login
       }
     }
   }, [pathname, publicRoutes, router]);

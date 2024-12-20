@@ -13,9 +13,23 @@ CoworkingSpace/web-app/
   │              └─ text_desk_logo_1.svg
   ├─ src/
   │  └─ app/
+  │     ├─ admin/
+  │     │  ├─ page.tsx
+  │     │  └─ roles.tsx
   │     ├─ api/
+  │     │  ├─ types/
+  │     │  │  └─ ProfileData.ts
+  │     │  ├─ accountApi.tsx
+  │     │  ├─ addressApi.tsx
   │     │  ├─ authApi.tsx
-  │     │  └─ PrivateRoute.js
+  │     │  └─ PrivateRoute.tsx
+  │     ├─ booking/
+  │     │  └─ page.tsx
+  │     ├─ ceo/
+  │     │  └─ page.tsx
+  │     ├─ company/
+  │     │  ├─ new.tsx
+  │     │  └─ page.tsx
   │     ├─ components/
   │     │  ├─ common/
   │     │  │  ├─ Button.tsx
@@ -27,10 +41,8 @@ CoworkingSpace/web-app/
   │     │  ├─ forms/
   │     │  │  ├─ auth/
   │     │  │  │  ├─ LoginForm.tsx
-  │     │  │  │  ├─ PasswordInput.tsx
   │     │  │  │  └─ RegisterForm.tsx
-  │     │  │  ├─ CompanyForm.tsx
-  │     │  │  └─ ProfileForm.tsx
+  │     │  │  └─ CompanyForm.tsx
   │     │  ├─ layout/
   │     │  │  ├─ navbar/
   │     │  │  │  ├─ LanguageDropdown.tsx
@@ -43,6 +55,8 @@ CoworkingSpace/web-app/
   │     │  │  └─ Sidebar.tsx
   │     │  └─ maps/
   │     │     └─ RoomMap.tsx
+  │     ├─ error403/
+  │     │  └─ page.tsx
   │     ├─ fonts/
   │     │  ├─ GeistMonoVF.woff
   │     │  └─ GeistVF.woff
@@ -50,25 +64,17 @@ CoworkingSpace/web-app/
   │     │  ├─ useAuth.ts
   │     │  ├─ useBooking.ts
   │     │  └─ useCompany.ts
-  │     ├─ index/
+  │     ├─ login/
+  │     │  └─ page.tsx
+  │     ├─ mybookings/
+  │     │  └─ page.tsx
+  │     ├─ normal-user/
+  │     │  └─ page.tsx
   │     ├─ pages/
-  │     │  ├─ admin/
-  │     │  │  ├─ index.tsx
-  │     │  │  └─ roles.tsx
-  │     │  ├─ booking/
-  │     │  │  └─ index.tsx
-  │     │  ├─ ceo/
-  │     │  │  └─ index.tsx
-  │     │  ├─ company/
-  │     │  │  ├─ index.tsx
-  │     │  │  └─ new.tsx
-  │     │  ├─ normal-user/
-  │     │  │  └─ index.tsx
-  │     │  ├─ profile/
-  │     │  │  ├─ index.tsx
-  │     │  │  └─ settings.tsx
-  │     │  ├─ login.tsx
-  │     │  └─ register.tsx
+  │     ├─ profile/
+  │     │  └─ page.tsx
+  │     ├─ register/
+  │     │  └─ page.tsx
   │     ├─ services/
   │     │  ├─ authService.ts
   │     │  ├─ bookingService.ts
@@ -82,17 +88,20 @@ CoworkingSpace/web-app/
   │     │  ├─ globals.css
   │     │  └─ themes.css
   │     ├─ utils/
-  │     │  ├─ authUtils.js
-  │     │  ├─ cookieUtils.js
+  │     │  ├─ authUtils
   │     │  ├─ routes.ts
   │     │  └─ themeUtils.ts
   │     ├─ layout.tsx
   │     └─ page.tsx
+  ├─ .editorconfig
+  ├─].env (ignored)
+  ├─].env.example (ignored)
   ├─ .eslintrc.json
   ├─ .gitignore
   ├─ .prettierignore
   ├─ .prettierrc.json
   ├─ folder-structure.txt
+  ├─ middleware.ts
   ├─]next-env.d.ts (ignored)
   ├─ next.config.ts
   ├─ package-lock.json

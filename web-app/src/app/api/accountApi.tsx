@@ -1,69 +1,50 @@
 import axios from 'axios';
+import { ProfileData } from '@/app/api/types/ProfileData';
+import Cookies from 'js-cookie'; 
 
 const API_BASE_URL = 'https://localhost:7198/api';
 
-interface ProfileData {
-  username?: string;
-  email?: string;
-  firstName?: string;
-  middleName?: string;
-  lastName: string;
-  prefix?: string;
-  suffix?: string;
-  nickname?: string;
-  recoveryEmail?: string;
-  alternaiveEmail?: string;
-  recoveryPhoneNumber?: string;
-  gender?: string;
-  birthday?: string; // Consider using Date type if manipulating dates directly
-  profilePicturePath?: string;
-  companyName?: string;
-  jobTitle?: string;
-  department?: string;
-  appLanguage?: string;
-  website?: string;
-  linkedin?: string;
-  facebook?: string;
-  instagram?: string;
-  twitter?: string;
-  github?: string;
-  youtube?: string;
-  tiktok?: string;
-  snapchat?: string;
-  password?: string;
-  street?: string;
-  houseNumber?: string;
-  postalCode?: string;
-  city?: string;
-  state?: string;
-  country?: string;
-  addressType?: string;
-  isDefaultAddress?: boolean;
+const token = Cookies.get('jwt'); // Use cookies instead of localStorage for consistency
+if (!token) {
+  alert('JWT token is missing. Please log in.');
+  throw new Error('JWT token is missing.');
 }
+
+export const getUserDetails = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/Account/user/get-user-details`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    // console.log('User details fetched successfully:', response.data);
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      console.error('Error fetching user details:', error.response.data);
+      throw new Error(
+        error.response.data.message || 'Failed to fetch user details'
+      );
+    }
+    throw error;
+  }
+};
 
 export const updateMyProfile = async (profileData: ProfileData) => {
   try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('JWT token is missing. Please log in.');
-    }
-
-    const decoded = JSON.parse(atob(token.split('.')[1])); // Decode JWT payload
-    const username = decoded?.sub; // Assuming the 'sub' claim contains the username
-    if (!username) {
-      throw new Error('Username not found in the token.');
-    }
-
+    // Send the PUT request to update the user's profile
     const response = await axios.put(
-      `${API_BASE_URL}/Account/update-my-profile/${username}`,
+      `${API_BASE_URL}/Account/user/update-profile`,
       profileData,
       {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, // Include the JWT token in the header
         },
       }
     );
-    console.log('Profile updated successfully:', response.data);
+
+    // console.log('Profile updated successfully:', response.data);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {

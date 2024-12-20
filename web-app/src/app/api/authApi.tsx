@@ -55,18 +55,19 @@ export const registerUser = async (
   }
 };
 
-// Login User function with strong type definitions
 export const loginUser = async (
   loginData: LoginUserData
 ): Promise<LoginResponse> => {
   try {
-    // console.log('Attempting to log in with data:', loginData);
     const response = await axios.post<LoginResponse>(
       `${API_BASE_URL}/Auth/user-login`,
       loginData
     );
 
-    return response.data; // Return the response data directly
+    // Set the JWT token in an HTTP-Only Secure Cookie
+    document.cookie = `jwt=${response.data.token}; Path=/; Secure; HttpOnly; SameSite=Strict`;
+
+    return response.data; // Optionally, return other data if needed
   } catch (error: unknown) {
     const axiosError = error as AxiosError;
     console.error(
@@ -74,5 +75,25 @@ export const loginUser = async (
       axiosError.response?.data || axiosError.message
     );
     throw new Error(axiosError.response?.data || axiosError.message);
+  }
+};
+
+export const validateJWT = async (token: string) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/Auth/validate-jwt`, {
+      headers: {
+        Authorization: `Bearer ${token}`, // Pass the JWT in the header
+      },
+    });
+    // console.log('JWT validation response:', response.data);
+    return response.data; // Expected to return { statusCode, message, username }
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      console.error('Error validating JWT:', error.response.data);
+      throw new Error(
+        error.response.data.message || 'Failed to validate JWT.'
+      );
+    }
+    throw error;
   }
 };

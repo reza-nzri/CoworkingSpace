@@ -10,21 +10,58 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
+import { validateJWT } from '@/app/api/authApi';
 
 const ProfileMenu: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!(event.target as HTMLElement).closest('.profile-menu')) {
+        setMenuOpen(false);
+      }
+    };
+  
+    if (menuOpen) {
+      document.addEventListener('click', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [menuOpen]);
+  
   // Check if the user is logged in
   useEffect(() => {
-    const token = Cookies.get('jwt'); // Assuming JWT is stored in cookies with key 'jwt'
-    setIsLoggedIn(!!token);
+    const checkAuthStatus = async () => {
+      const token = Cookies.get('jwt');
+      if (token) {
+        try {
+          const response = await validateJWT(token);
+          if (response.statusCode === 200) {
+            setIsLoggedIn(true);
+          } else {
+            console.warn(response.message || 'Session expired. Please log in again.');
+            Cookies.remove('jwt');
+          }
+        } catch (error) {
+          console.error('Error validating JWT:', error);
+          Cookies.remove('jwt');
+        }
+      } else {
+        setIsLoggedIn(false);
+      }
+    };
+  
+    checkAuthStatus();
   }, []);
 
+
   // Handle menu toggle
-  const handleMenuToggle = () => {
-    setMenuOpen(!menuOpen);
+  const handleMenuToggle = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent clicks from bubbling and closing the menu unintentionally
+    setMenuOpen((prev) => !prev);
   };
 
   // Handle menu options
@@ -39,7 +76,7 @@ const ProfileMenu: React.FC = () => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative profile-menu">
       {/* Profile Icon */}
       <button
         onClick={isLoggedIn ? handleMenuToggle : handleLoginRedirect}
@@ -51,7 +88,10 @@ const ProfileMenu: React.FC = () => {
 
       {/* Dropdown Menu */}
       {isLoggedIn && menuOpen && (
-        <div className="absolute top-10 right-0 bg-white dark:bg-gray-800 shadow-md rounded z-10 w-48">
+        <div
+          className="absolute top-10 right-0 bg-white dark:bg-gray-800 shadow-md rounded z-10 w-48"
+          onClick={(e) => e.stopPropagation()} // Prevent menu close on inner clicks
+        >
           <button
             onClick={() => handleNavigation('/profile')}
             className="flex items-center gap-3 px-6 py-2 text-left w-full hover:bg-gray-100 dark:hover:bg-gray-700"

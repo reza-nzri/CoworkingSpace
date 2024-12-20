@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { updateMyProfile } from '@/app/api/accountApi';
+import React, { useState, useRef, useEffect } from 'react';
+import { updateMyProfile, getUserDetails } from '@/app/api/accountApi';
+import { getAllAddressTypes } from '@/app/api/addressApi';
 import PrivateRoute from '@/app/api/PrivateRoute';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -12,8 +13,20 @@ import {
   faEnvelope,
   faUserCircle,
 } from '@fortawesome/free-solid-svg-icons';
+import Cookies from 'js-cookie'; 
+import router from 'next/router';
+import RegisterCompanyModal from '../company/RegisterCompanyModal';
+
+interface AddressType {
+  addressTypeId: number;
+  addressTypeName: string;
+  description?: string; // Optional if not always present
+}
 
 export default function ProfilePage() {
+  const profileRef = useRef<HTMLDivElement>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [profile, setProfile] = useState({
     email: '',
     firstName: '',
@@ -27,7 +40,6 @@ export default function ProfilePage() {
     recoveryPhoneNumber: '',
     gender: '',
     birthday: '',
-    profilePicturePath: '',
     companyName: '',
     jobTitle: '',
     department: '',
@@ -60,8 +72,11 @@ export default function ProfilePage() {
     setProfile({ ...profile, [name]: type === 'checkbox' ? checked : value });
   };
 
+  // scroll to "My Profile"
   const handleEdit = () => {
-    alert('Edit profile functionality coming soon!');
+    if (profileRef.current) {
+      profileRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   const handlePayNow = () => {
@@ -71,7 +86,12 @@ export default function ProfilePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await updateMyProfile(profile);
+      const updatedProfile = {
+        ...profile,
+        birthday: profile.birthday || undefined, // Ensure date fields are either empty or valid
+      };
+
+      await updateMyProfile(updatedProfile);
       alert('Profile updated successfully!');
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -82,6 +102,42 @@ export default function ProfilePage() {
       }
     }
   };
+
+  const [addressTypes, setAddressTypes] = useState<AddressType[]>([]);
+  // Fetch address types when the component mounts
+  useEffect(() => {
+    const fetchAddressTypes = async () => {
+      try {
+        const types = await getAllAddressTypes();
+        setAddressTypes(types);
+      } catch (error) {
+        console.error('Error fetching address types:', error);
+        alert('Failed to fetch address types. Please try again.');
+      }
+    };
+
+    fetchAddressTypes();
+  }, []);
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const data = await getUserDetails();
+        setProfile(data); // Set the profile with fetched user details
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error('Error fetching user details:', error.message);
+          alert(error.message || 'Session expired. Please log in again.');
+        } else {
+          console.error('An unexpected error occurred.');
+        }
+        Cookies.remove('jwt'); // Clear the invalid token
+        router.push('/login'); // Redirect to login page
+      }
+    };
+  
+    fetchProfileData();
+  }, []);
 
   return (
     <PrivateRoute requiredRole="NormalUser">
@@ -98,7 +154,7 @@ export default function ProfilePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Profile Info Card */}
             <div className="bg-gray-800 p-6 rounded-lg shadow-lg transform hover:-translate-y-3 hover:scale-105 transition duration-300 hover:shadow-xl cursor-pointer">
               <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
@@ -108,18 +164,23 @@ export default function ProfilePage() {
                 />{' '}
                 Personal Information
               </h2>
+
               <p className="text-gray-300">
                 <strong>Name:</strong> {profile.firstName} {profile.lastName}
               </p>
+              
               <p className="text-gray-300">
                 <strong>Email:</strong> {profile.email}
               </p>
+              
               <p className="text-gray-300">
-                <strong>Job Title:</strong> {profile.jobTitle}
+                <strong>Job Title:</strong> {profile.jobTitle || 'N/A'}
               </p>
+              
               <p className="text-gray-300">
-                <strong>Company:</strong> profile.company
+                <strong>Company:</strong> {profile.companyName || 'N/A'}
               </p>
+
               <button
                 onClick={handleEdit}
                 className="mt-4 w-full py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-bold transition duration-300"
@@ -127,6 +188,24 @@ export default function ProfilePage() {
                 Edit Profile <FontAwesomeIcon icon={faEdit} />
               </button>
             </div>
+
+            {/* Register Company Card */}
+            <div className="bg-gray-800 p-6 rounded-lg shadow-lg transform hover:-translate-y-3 hover:scale-105 transition duration-300 hover:shadow-xl cursor-pointer">
+             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+               <FontAwesomeIcon icon={faUserCircle} className="text-purple-500" /> Register Company
+             </h2>
+             <p className="text-gray-300">
+               Register a new company as a CEO.
+             </p>
+             <button
+               onClick={() => setIsModalOpen(true)}
+               className="mt-4 w-full py-2 bg-purple-600 hover:bg-purple-700 rounded-md text-white font-bold transition duration-300"
+             >
+               Register Company
+             </button>
+           </div>
+
+           <RegisterCompanyModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}/>
 
             {/* Monthly Invoice Card */}
             <div className="bg-gray-800 p-6 rounded-lg shadow-lg transform hover:-translate-y-3 hover:scale-105 transition duration-300 hover:shadow-xl cursor-pointer">
@@ -192,7 +271,8 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="container mx-auto p-4">
+        {/* My Profile Section */}
+        <div className="container mx-auto p-4 mt-10" ref={profileRef}>
           <h1 className="text-3xl font-bold mb-4 flex items-center">
             <FontAwesomeIcon icon={faUserCircle} className="mr-2" /> My Profile
           </h1>
@@ -201,48 +281,125 @@ export default function ProfilePage() {
             className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
           >
             {/* Dynamic Input Fields */}
-            {Object.entries(profile).map(([key, value]) => (
-              <div key={key} className="bg-gray-800 p-3 rounded">
-                <label
-                  htmlFor={key}
-                  className="block text-sm font-medium mb-2 capitalize"
-                >
-                  {key.replace(/([A-Z])/g, ' $1')}{' '}
-                  {/* Converts camelCase to spaced text */}
-                </label>
-                {typeof value === 'boolean' ? (
-                  <input
-                    type="checkbox"
-                    id={key}
-                    name={key}
-                    checked={value}
-                    onChange={handleChange}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                ) : (
-                  <input
-                    type={
-                      key === 'password'
-                        ? 'password'
-                        : key === 'birthday'
+            {Object.entries(profile).map(([key, value]) => {
+              if (key === 'addressType') {
+                return (
+                  <div key={key} className="bg-gray-800 p-3 rounded">
+                    <label
+                      htmlFor={key}
+                      className="block text-sm font-medium mb-2 capitalize"
+                    >
+                      Address Type
+                    </label>
+
+                    <select
+                      id={key}
+                      name={key}
+                      value={typeof value === 'string' ? value : ''} // Ensure value is a string
+                      onChange={handleChange}
+                      className="block w-full p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="" disabled>
+                        Select Address Type
+                      </option>
+                      {addressTypes.map((type) => (
+                        <option key={type.addressTypeId} value={type.addressTypeName}>
+                          {type.addressTypeName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                );
+              }
+            
+              if (key === 'isDefaultAddress') {
+                return (
+                  <div key={key} className="bg-gray-800 p-3 rounded">
+                    <label
+                      htmlFor={key}
+                      className="block text-sm font-medium mb-2 capitalize"
+                    >
+                      {key.replace(/([A-Z])/g, ' $1')}
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id={key}
+                        name={key}
+                        checked={!!value}
+                        onChange={handleChange}
+                        disabled // This makes the checkbox read-only
+                        className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                      />
+                      <span className="text-sm font-medium text-gray-200">
+                        {value ? 'Activate' : 'De-Activate'}
+                      </span>
+                    </div>
+                  </div>
+                );
+              }
+            
+              if (key === 'roles' || key === 'accessFailedCount' || key === 'lockoutEnd') {
+                return (
+                  <div key={key} className="bg-gray-800 p-3 rounded">
+                    <label
+                      htmlFor={key}
+                      className="block text-sm font-medium mb-2 capitalize"
+                    >
+                      {key.replace(/([A-Z])/g, ' $1')}
+                    </label>
+                    <p className="text-gray-300">{value?.toString() || 'N/A'}</p>
+                  </div>
+                );
+              }
+            
+              return (
+                <div key={key} className="bg-gray-800 p-3 rounded">
+                  <label
+                    htmlFor={key}
+                    className="block text-sm font-medium mb-2 capitalize"
+                  >
+                    {key.replace(/([A-Z])/g, ' $1')}
+                  </label>
+                  {typeof value === 'boolean' ? (
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id={key}
+                        name={key}
+                        checked={!!value}
+                        onChange={handleChange}
+                        disabled // This makes the checkbox read-only
+                        className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                      />
+                    </div>
+                  ) : (
+                    <input
+                      type={
+                        key === 'password'
+                          ? 'password'
+                          : key === 'birthday'
                           ? 'date'
                           : 'text'
-                    }
-                    id={key}
-                    name={key}
-                    value={value}
-                    onChange={handleChange}
-                    className="block w-full p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-blue-500"
-                  />
-                )}
-              </div>
-            ))}
+                      }
+                      id={key}
+                      name={key}
+                      value={value || ''}
+                      onChange={handleChange}
+                      className="block w-full p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-blue-500"
+                    />
+                  )}
+                </div>
+              );
+            })}
+
+
             {/* Submit Button */}
             <button
               type="submit"
               className="col-span-1 md:col-span-2 lg:col-span-3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300"
             >
-              Update Profile
+              Save all Update Profile Changes
             </button>
           </form>
         </div>
