@@ -10,6 +10,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
+import { jwtDecode, JwtPayload } from 'jwt-decode';
 import { validateJWT } from '@/app/api/authApi';
 
 const ProfileMenu: React.FC = () => {
@@ -36,27 +37,46 @@ const ProfileMenu: React.FC = () => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       const token = Cookies.get('jwt');
-      if (token) {
-        try {
-          const response = await validateJWT(token);
-          if (response.statusCode === 200) {
-            setIsLoggedIn(true);
-          } else {
-            console.warn(response.message || 'Session expired. Please log in again.');
-            Cookies.remove('jwt');
-          }
-        } catch (error) {
-          console.error('Error validating JWT:', error);
+  
+      if (!token) {
+        setIsLoggedIn(false);
+        return;
+      }
+  
+      try {
+        interface CustomJwtPayload extends JwtPayload {
+          roles?: string[];
+        }        
+        
+        const decoded: CustomJwtPayload = jwtDecode(token);
+        const roles = decoded.roles || [];
+        
+  
+        if (!Array.isArray(roles) || roles.length === 0) {
+          console.warn('ProfileMenu.tsx: No roles assigned to this account.');
           Cookies.remove('jwt');
+          setIsLoggedIn(false);
+          return;
         }
-      } else {
+  
+        // Validate the JWT via API (optional, but ensures token is still valid)
+        const response = await validateJWT(token);
+        if (response.statusCode === 200) {
+          setIsLoggedIn(true);
+        } else {
+          console.warn(response.message || 'Session expired. Please log in again.');
+          Cookies.remove('jwt');
+          setIsLoggedIn(false);
+        }
+      } catch (error) {
+        console.error('Error validating JWT:', error);
+        Cookies.remove('jwt');
         setIsLoggedIn(false);
       }
     };
   
     checkAuthStatus();
   }, []);
-
 
   // Handle menu toggle
   const handleMenuToggle = (e: React.MouseEvent) => {

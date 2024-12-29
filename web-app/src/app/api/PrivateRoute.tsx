@@ -12,7 +12,7 @@ interface PrivateRouteProps {
 }
 
 interface CustomJwtPayload extends JwtPayload {
-  role?: string[]; // Role is now an array of strings
+  roles?: string[];
 }
 
 const roleAccess = {
@@ -30,47 +30,45 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
 
   useEffect(() => {
     const token = Cookies.get('jwt');
-
+  
     if (!token) {
       if (!publicRoutes.includes(pathname)) {
         router.push('/login');
       }
       return;
     }
-
-    if (token) {
-      try {
-        const decoded: CustomJwtPayload = jwtDecode<CustomJwtPayload>(token);
-        const userRoles = decoded.role;
-
-        // Allow access to public routes for all users
-        if (publicRoutes.includes(pathname)) {
-          return;
-        }
-
-        // Check if the user has any roles that grant access to the current route
-        if (Array.isArray(userRoles)) {
-          const hasAccess = userRoles.some((role) => {
-            const allowedRoutes = roleAccess[role as keyof typeof roleAccess] || [];
-            return allowedRoutes.includes(pathname);
-          });
-
-          if (!hasAccess) {
-            router.push('/error403');
-            return;
-          }
-        } else {
-          console.error('Invalid roles in JWT payload.');
-          Cookies.remove('jwt'); // Clear invalid token
-          router.push('/login');
-        }
-      } catch (error: unknown) {
-        console.error('Error decoding JWT:', error instanceof Error ? error.message : 'Unknown error');
-        Cookies.remove('jwt'); // Clear the invalid token
-        router.push('/login'); // Redirect to login
+  
+    try {
+      const decoded: CustomJwtPayload = jwtDecode<CustomJwtPayload>(token);
+      const userRoles = decoded.roles || [];
+  
+      if (!Array.isArray(userRoles) || userRoles.length === 0) {
+        console.warn('PrivateRoute.tsx: No roles assigned to this account.');
+        Cookies.remove('jwt');
+        router.push('/login');
+        return;
       }
+  
+      // Allow access to public routes for all users
+      if (publicRoutes.includes(pathname)) {
+        return;
+      }
+  
+      // Check if the user has any roles that grant access to the current route
+      const hasAccess = userRoles.some((role) => {
+        const allowedRoutes = roleAccess[role as keyof typeof roleAccess] || [];
+        return allowedRoutes.includes(pathname);
+      });
+  
+      if (!hasAccess) {
+        router.push('/error403');
+      }
+    } catch (error: unknown) {
+      console.error('Error decoding JWT:', error instanceof Error ? error.message : 'Unknown error');
+      Cookies.remove('jwt');
+      router.push('/login');
     }
-  }, [pathname, publicRoutes, router]);
+  }, [pathname, publicRoutes, router]);  
 
   const token = Cookies.get('jwt');
   if (!token && !publicRoutes.includes(pathname)) {

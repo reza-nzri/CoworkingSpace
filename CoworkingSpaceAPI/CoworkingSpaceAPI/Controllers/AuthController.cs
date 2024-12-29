@@ -80,6 +80,15 @@ namespace CoworkingSpaceAPI.Controllers // Define the namespace for the AuthCont
             if (string.IsNullOrEmpty(token)) // If token generation fails
                 return StatusCode(500, "An error occurred while generating the token."); // Return internal server error
 
+            // Set the JWT as an HttpOnly cookie
+            Response.Cookies.Append("jwt", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,  // Use HTTPS for cookie transmission
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddDays(7)  // Token expiry (adjust as needed)
+            });
+
             var userRoles = await _userManager.GetRolesAsync(user); // Retrieve the roles assigned to the user
             return Ok(new { Token = token, Message = "Login successful." }); // Return success response with the token and roles
         }

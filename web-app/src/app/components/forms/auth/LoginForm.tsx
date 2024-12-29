@@ -59,8 +59,8 @@ const LoginForm: React.FC = () => {
 
       // Extend JwtPayload to include your custom claims
       interface CustomJwtPayload extends JwtPayload {
-        role?: string; // Add role or any other custom claims here
-      }
+        roles?: string[];
+      }      
 
       // Decode the JWT to extract the role
       const decoded: CustomJwtPayload = jwtDecode<CustomJwtPayload>(token);
@@ -68,11 +68,15 @@ const LoginForm: React.FC = () => {
 
       // Access claims like `role` or `sub` from the token
       // Extract role from the decoded JWT
-      const roles = decoded && 'role' in decoded ? decoded.role : [];
-      if (!Array.isArray(roles) || roles.length === 0) {
-        throw new Error('No roles assigned to this account.');
+      const roles = decoded.roles || [];
+
+      if (!Array.isArray(roles)) {
+        throw new Error('Roles claim is invalid or missing.');
       }
-      
+
+      console.log('Decoded JWT:', decoded);
+      console.log('Roles:', roles);
+
       // Determine the user's role and navigate to the corresponding page.
       const rolePaths: Record<string, string> = {
         Admin: '/admin',

@@ -4,7 +4,7 @@ import { jwtDecode, JwtPayload } from 'jwt-decode';
 
 // Define a type for the custom JWT payload
 export type CustomJwtPayload = JwtPayload & {
-  role?: string;
+  roles?: string[];
 };
 
 // Custom hook for handling authentication redirects
@@ -20,22 +20,38 @@ export const useHandleAuthenticationRedirect = () => {
     }
 
     try {
+      // Decode JWT to extract roles from the token payload
       const decoded: CustomJwtPayload = jwtDecode<CustomJwtPayload>(token);
-      const role = decoded.role;
 
-      if (!role) {
-        throw new Error('No roles assigned to this account.');
+      // Extract roles from the claims using the correct URI key
+      const roles = decoded.roles || [];
+
+      // Debugging to verify JWT structure and extracted roles
+      console.log('Decoded JWT:', decoded);
+      console.log('Roles:', roles);
+
+      // Handle case where no roles are found
+      if (!Array.isArray(roles) || roles.length === 0) {
+        throw new Error('authUtils: No roles assigned to this account.');
       }
 
+      // Define redirection paths based on roles
       const rolePaths: Record<string, string> = {
         Admin: '/admin',
         NormalUser: '/profile',
+        CEO: '/ceo',
       };
 
-      router.push(rolePaths[role] || '/');
+      // Redirect based on the first role found
+      const userRoute = roles.find((role) => rolePaths[role]) || '/';
+      router.push(userRoute);
+
+      console.log('Decoded JWT:', decoded);
+      console.log('Roles:', roles);
     } catch (error) {
       console.error('Invalid or expired token:', error);
-      router.push('/login'); // Redirect to login if token is invalid
+      Cookies.remove('jwt');  // Clear invalid token
+      router.push('/login');  // Redirect to login if token is invalid
     }
   };
 };
