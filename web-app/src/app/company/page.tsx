@@ -10,6 +10,7 @@ import {
   faMapMarkedAlt,
   faUsers,
 } from '@fortawesome/free-solid-svg-icons';
+import CompanyDetailsList from './CompanyDetailsList';
 
 const CompanyPage = () => {
   const [companies] = useState([
@@ -139,6 +140,11 @@ const CompanyPage = () => {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Company Details Section */}
+      <div className="mt-12">
+        <CompanyDetailsList />
       </div>
     </div>
   );

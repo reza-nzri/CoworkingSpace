@@ -27,12 +27,40 @@ export const postCeoRegisterComapny = async (
     if (axios.isAxiosError(error) && error.response) {
       console.error('Error during company registration:', error.response.data);
       if (axios.isAxiosError(error) && error.response) {
-        console.error('Error during company registration:', error.response.data);
+        console.error(
+          'Error during company registration:',
+          error.response.data
+        );
         throw new Error(
           error.response.data.message || 'Failed to register the company.'
         );
-      }      
+      }
     }
     throw error;
+  }
+};
+
+// Fetch company details for CEO
+// Fetch all company details for CEO
+export const getCeoCompanyDetails = async () => {
+  try {
+    const token = Cookies.get('jwt');
+    if (!token) {
+      throw new Error('JWT token is missing. Please log in.');
+    }
+
+    const response = await axios.get(
+      `${API_BASE_URL}/Company/ceo/get-company-details`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching company details:', error);
+    throw new Error('Failed to fetch company details.');
   }
 };
