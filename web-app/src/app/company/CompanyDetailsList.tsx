@@ -8,6 +8,11 @@ import {
 } from '@/app/api/companyApi';
 import axios from 'axios';
 import EditCompanyModal from './EditCompanyModal';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faTrash, 
+  faEdit,
+} from '@fortawesome/free-solid-svg-icons';
 
 export interface Company {
   name: string;
@@ -149,7 +154,7 @@ const CompanyDetailsList = () => {
   };
 
   return (
-    <div className="container mx-auto mt-4 py-5">
+    <div className="container mx-auto my-20 py-5">
       <h2 className="text-3xl font-bold text-center text-white mb-6">
         Company Details
       </h2>
@@ -186,19 +191,23 @@ const CompanyDetailsList = () => {
               </p>
             )}
 
-            <button
-              onClick={() => handleDelete(company)}
-              className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md mt-4"
-            >
-              Delete Company
-            </button>
 
-            <button
-              onClick={() => openEditModal(company)}
-              className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-md mt-4"
-            >
-              Edit
-            </button>
+          {/* Action Buttons */}
+            <div className="flex mt-4 gap-4 flex-wrap">
+              <button
+                onClick={() => handleDelete(company)}
+                className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md"
+              >
+                <FontAwesomeIcon icon={faTrash} />
+              </button>
+            
+              <button
+                onClick={() => openEditModal(company)}
+                className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-md"
+              >
+                <FontAwesomeIcon icon={faEdit} />
+              </button>
+            </div>
           </div>
         ))}
       </div>

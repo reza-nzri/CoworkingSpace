@@ -142,10 +142,7 @@ const CompanyPage = () => {
         </div>
       </div>
 
-      {/* Company Details Section */}
-      <div className="mt-12">
-        <CompanyDetailsList />
-      </div>
+      <CompanyDetailsList />
     </div>
   );
 };
