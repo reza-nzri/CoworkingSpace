@@ -125,35 +125,36 @@ namespace CoworkingSpaceAPI.Controllers
             }
 
             // Fetch the company details associated with the user
-            var company = await _context.Companies
+            var companies = await _context.Companies
                 .Include(c => c.CompanyAddresses)
                     .ThenInclude(ca => ca.Address)
                 .Include(c => c.CompanyAddresses)
                     .ThenInclude(ca => ca.AddressType)
                 .Include(c => c.CompanyCeos)
                     .ThenInclude(cc => cc.CeoUser)
-                .FirstOrDefaultAsync(c => c.CompanyCeos.Any(cc => cc.CeoUserId == user.Id));
+                .Where(c => c.CompanyCeos.Any(cc => cc.CeoUserId == user.Id))
+                .ToListAsync();
 
-            if (company == null)
+            if (companies == null || !companies.Any())
             {
                 return Ok(new
                 {
                     StatusCode = 200,
-                    Message = "The user does not own a company.",
+                    Message = "The user does not own any companies.",
                     Success = false,
-                    Data = (object)null
+                    Data = new List<object>()
                 });
             }
 
             // Map the company to a DTO
-            var companyDetailsDto = _mapper.Map<CompanyDetailsDto>(company);
+            var companyDetailsDtoList = _mapper.Map<List<CompanyDetailsDto>>(companies);
 
             return Ok(new
             {
                 StatusCode = 200,
                 Message = "Company details retrieved successfully.",
                 Success = true,
-                Data = companyDetailsDto
+                Data = companyDetailsDtoList
             });
         }
 
@@ -457,6 +458,14 @@ namespace CoworkingSpaceAPI.Controllers
 
             // Save changes
             await _context.SaveChangesAsync();
+
+            // Remove CEO role if no companies are left associated with the user
+            var remainingCompanies = await _context.CompanyCeos.AnyAsync(cc => cc.CeoUserId == user.Id);
+            if (!remainingCompanies && await _userManager.IsInRoleAsync(user, "CEO"))
+            {
+                await _userManager.RemoveFromRoleAsync(user, "CEO");
+                await _userManager.UpdateSecurityStampAsync(user);  // Ensure the security stamp is updated
+            }
 
             return Ok(new
             {
