@@ -122,3 +122,64 @@ export const deleteAllCompanies = async () => {
       throw error;
     }
 };
+
+export const updateCompanyDetails = async (
+    formData: Partial<Record<string, string | null | boolean>>,
+    CompanyName: string,
+    Industry: string,
+    foundedDate: string,
+    registrationNumber: string,
+    taxId: string
+  ) => {
+    try {
+      // Retrieve JWT token from cookies
+      const token = Cookies.get('jwt');
+      if (!token) {
+        throw new Error('JWT token is missing. Please log in.');
+      }
+  
+      // Log the payload and params before sending the request
+      console.log('Update Payload:', formData);
+      console.log('Query Params:', {
+        CompanyName,
+        Industry,
+        foundedDate,
+        registrationNumber: registrationNumber || null,
+        taxId: taxId || null,
+      });
+  
+      // API call to update company details
+      const response = await axios.put(
+        `${API_BASE_URL}/Company/ceo/update-company-details`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          params: {
+            CompanyName,
+            Industry,
+            foundedDate,
+            registrationNumber: registrationNumber || null,
+            taxId: taxId || null,
+          },
+        }
+      );
+  
+      // Log successful response
+      console.log('Update Response:', response.data);
+  
+      // Return the successful response data
+      return response.data;
+    } catch (error) {
+      // Handle errors and log them
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error updating company:', error.response.data);
+        throw new Error(
+          error.response.data.message || 'Failed to update company details.'
+        );
+      }
+      throw error;
+    }
+};

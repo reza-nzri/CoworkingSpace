@@ -160,7 +160,14 @@ namespace CoworkingSpaceAPI.Controllers
 
         [HttpPut("ceo/update-company-details")]
         [Authorize(Roles = "CEO")]
-        public async Task<IActionResult> UpdateCompanyDetails([FromBody] UpdateCompanyDetailsDto dto)
+        public async Task<IActionResult> UpdateCompanyDetails(
+            [FromBody] UpdateCompanyDetailsDto dto,
+            [FromQuery] string CompanyName,
+            [FromQuery] string Industry,
+            [FromQuery] DateOnly foundedDate,
+            [FromQuery] string registrationNumber,
+            [FromQuery] string taxId
+        )
         {
             // Extract username from JWT
             var username = User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
@@ -190,10 +197,37 @@ namespace CoworkingSpaceAPI.Controllers
                 dto.FoundedDate = null; // Set null if empty
             }
 
-            // Find the company associated with the user
-            var company = await _context.Companies
+            // Find all companies matching the criteria
+            var companies = await _context.Companies
                 .Include(c => c.CompanyCeos)
-                .FirstOrDefaultAsync(c => c.CompanyCeos.Any(cc => cc.CeoUserId == user.Id));
+                .Where(c =>
+                    c.Name == CompanyName &&
+                    c.Industry == Industry &&
+                    c.FoundedDate == foundedDate &&
+                    c.RegistrationNumber == registrationNumber &&
+                    c.TaxId == taxId &&
+                    c.CompanyCeos.Any(cc => cc.CeoUserId == user.Id)
+                ).ToListAsync();
+
+            if (companies.Count == 0)
+            {
+                return NotFound(new
+                {
+                    StatusCode = 404,
+                    Message = "No company found matching the criteria or you are not authorized."
+                });
+            }
+            else if (companies.Count > 1)
+            {
+                return Conflict(new
+                {
+                    StatusCode = 409,
+                    Message = "Multiple companies match the criteria. Please provide more specific information."
+                });
+            }
+
+            // Genau eine Firma gefunden -> Update
+            var company = companies.First();
 
             if (company == null)
             {
@@ -280,47 +314,6 @@ namespace CoworkingSpaceAPI.Controllers
                 StatusCode = 200,
                 Message = "No changes were made.",
                 Changes = changes
-            });
-        }
-
-        [HttpPut("ceo/update-company-details")]
-        [Authorize(Roles = "CEO")]
-        public async Task<IActionResult> UpdateCompanyDetails([FromBody] UpdateCompanyDetailsDto dto)
-        {
-            var username = User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrWhiteSpace(username))
-            {
-                return Unauthorized(new { StatusCode = 401, Message = "User identity cannot be determined." });
-            }
-
-            var user = await _userManager.FindByNameAsync(username);
-            if (user == null)
-            {
-                return NotFound(new { StatusCode = 404, Message = $"User with username '{username}' was not found." });
-            }
-
-            var company = await _context.Companies
-                .Include(c => c.CompanyCeos)
-                .FirstOrDefaultAsync(c => c.CompanyCeos.Any(cc => cc.CeoUserId == user.Id));
-
-            if (company == null)
-            {
-                return NotFound(new { StatusCode = 404, Message = "No company associated with the user." });
-            }
-
-            // Map DTO to Entity and Update only non-null values
-            _mapper.Map(dto, company);
-
-            // Aktualisiere updatedAt auf aktuelle Zeit
-            company.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-
-            return Ok(new
-            {
-                StatusCode = 200,
-                Message = "Company details updated successfully."
             });
         }
 

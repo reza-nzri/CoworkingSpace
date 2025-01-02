@@ -7,8 +7,9 @@ import {
   deleteAllCompanies,
 } from '@/app/api/companyApi';
 import axios from 'axios';
+import EditCompanyModal from './EditCompanyModal';
 
-interface Company {
+export interface Company {
   name: string;
   industry: string;
   description: string | null;
@@ -38,6 +39,23 @@ const CompanyDetailsList = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+
+  const openEditModal = (company: Company) => {
+    setSelectedCompany(company);
+    setIsEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setSelectedCompany(null);
+    setIsEditModalOpen(false);
+  };
+
+  const handleUpdate = () => {
+    // Refresh the company list after update (implement fetch logic)
+    alert('Company list refreshed.');
+  };
 
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -174,9 +192,25 @@ const CompanyDetailsList = () => {
             >
               Delete Company
             </button>
+
+            <button
+              onClick={() => openEditModal(company)}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-md mt-4"
+            >
+              Edit
+            </button>
           </div>
         ))}
       </div>
+
+      {isEditModalOpen && selectedCompany ? (
+        <EditCompanyModal
+          company={selectedCompany}
+          onClose={closeEditModal}
+          onUpdate={handleUpdate}
+          isOpen={isEditModalOpen}
+        />
+      ) : null}
 
       <div className="text-center my-12">
         <button

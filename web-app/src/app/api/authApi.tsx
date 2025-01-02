@@ -136,7 +136,7 @@ export const getJWT = async (): Promise<string | null> => {
   const token = Cookies.get('jwt');
   
   if (!token) {
-    console.warn('No JWT found in cookies.');
+    // console.warn('No JWT found in cookies.');
     return null;
   }
 
