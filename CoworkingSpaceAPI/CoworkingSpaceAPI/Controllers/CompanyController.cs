@@ -283,6 +283,47 @@ namespace CoworkingSpaceAPI.Controllers
             });
         }
 
+        [HttpPut("ceo/update-company-details")]
+        [Authorize(Roles = "CEO")]
+        public async Task<IActionResult> UpdateCompanyDetails([FromBody] UpdateCompanyDetailsDto dto)
+        {
+            var username = User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return Unauthorized(new { StatusCode = 401, Message = "User identity cannot be determined." });
+            }
+
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return NotFound(new { StatusCode = 404, Message = $"User with username '{username}' was not found." });
+            }
+
+            var company = await _context.Companies
+                .Include(c => c.CompanyCeos)
+                .FirstOrDefaultAsync(c => c.CompanyCeos.Any(cc => cc.CeoUserId == user.Id));
+
+            if (company == null)
+            {
+                return NotFound(new { StatusCode = 404, Message = "No company associated with the user." });
+            }
+
+            // Map DTO to Entity and Update only non-null values
+            _mapper.Map(dto, company);
+
+            // Aktualisiere updatedAt auf aktuelle Zeit
+            company.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                StatusCode = 200,
+                Message = "Company details updated successfully."
+            });
+        }
+
         // PUT: api/Company/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
@@ -473,6 +514,46 @@ namespace CoworkingSpaceAPI.Controllers
                 Message = $"{companies.Count} companies have been deleted successfully.",
                 Success = true
             });
+        }
+
+        [HttpDelete("ceo/delete-company")]
+        [Authorize(Roles = "CEO")]
+        public async Task<IActionResult> DeleteCompany([FromBody] DeleteCompanyRequestDto dto)
+        {
+            var username = User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return Unauthorized(new { StatusCode = 401, Message = "User identity cannot be determined." });
+            }
+
+            var company = await _context.Companies
+                .Include(c => c.CompanyCeos)
+                    .ThenInclude(cc => cc.CeoUser)
+                .FirstOrDefaultAsync(c =>
+                    c.Name == dto.Name &&
+                    c.Industry == dto.Industry &&
+                    c.FoundedDate == dto.FoundedDate &&
+                    c.RegistrationNumber == dto.RegistrationNumber &&
+                    c.TaxId == dto.TaxId &&
+                    c.CompanyCeos.Any(cc => cc.CeoUser.UserName == username)
+                );
+
+            if (company == null)
+            {
+                return NotFound(new { StatusCode = 404, Message = "Company not found or you are not authorized." });
+            }
+
+            // Lösche verknüpfte CEO-Einträge zuerst (sicherstellen, dass keine Null-Referenz auftritt)
+            var ceoEntries = company.CompanyCeos?
+                .Where(cc => cc.CeoUser != null && cc.CeoUser.UserName == username)
+                .ToList() ?? new List<CompanyCeo>();
+
+            _context.CompanyCeos.RemoveRange(ceoEntries);
+            _context.Companies.Remove(company);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { StatusCode = 200, Message = "Company deleted successfully." });
         }
 
         // DELETE: api/Company/5
