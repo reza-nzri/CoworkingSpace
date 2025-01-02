@@ -39,11 +39,8 @@ namespace CoworkingSpaceAPI.Services.JwtToken // Define the service namespace
 				new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // Add a unique token ID
             };
 
-            // Add each role individually as a claim
-            foreach (var role in roles)
-            {
-                claims.Add(new Claim("roles", role));
-            }
+            // Ensure roles are always added as an array in the JWT payload
+            claims.Add(new Claim("roles", JsonSerializer.Serialize(roles), JsonClaimValueTypes.JsonArray));
 
             var jwtKey = _configuration["Jwt:Key"];
 

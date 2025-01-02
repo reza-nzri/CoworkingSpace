@@ -12,7 +12,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 const CompanyPage = () => {
-  const [companies, setCompanies] = useState([
+  const [companies] = useState([
     {
       id: 1,
       name: 'Tech Innovators Ltd.',

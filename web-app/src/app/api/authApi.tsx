@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import Cookies from 'js-cookie';
 
 // Define the base URL for the API
 const API_BASE_URL = 'https://localhost:7198/api';
@@ -128,5 +129,30 @@ export const validateJWT = async (token: string) => {
       );
     }
     throw error;
+  }
+};
+
+export const getJWT = async (): Promise<string | null> => {
+  const token = Cookies.get('jwt');
+  
+  if (!token) {
+    console.warn('No JWT found in cookies.');
+    return null;
+  }
+
+  try {
+    const response = await axios.get(`${API_BASE_URL}/Auth/validate-jwt`, {
+      headers: {
+        Authorization: `Bearer ${token}`,  // Send JWT in Authorization header
+      },
+    });
+
+    if (response.data.statusCode === 200) {
+      return token;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error retrieving JWT:', error);
+    return null;
   }
 };
