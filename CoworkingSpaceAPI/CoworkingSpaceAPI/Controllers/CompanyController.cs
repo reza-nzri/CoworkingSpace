@@ -30,27 +30,6 @@ namespace CoworkingSpaceAPI.Controllers
             _roleManager = roleManager;
         }
 
-        // GET: api/Company
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Company>>> GetCompanies()
-        {
-            return await _context.Companies.ToListAsync();
-        }
-
-        // GET: api/Company/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Company>> GetCompany(int id)
-        {
-            var company = await _context.Companies.FindAsync(id);
-
-            if (company == null)
-            {
-                return NotFound();
-            }
-
-            return company;
-        }
-
         // GET: api/Company/admin/get-all-companies
         [HttpGet("admin/get-all-companies")]
         [Authorize(Roles = "Admin")]
@@ -74,9 +53,20 @@ namespace CoworkingSpaceAPI.Controllers
             // Map companies to DTOs
             var companyDetailsDtos = _mapper.Map<List<CompanyDetailsDto>>(companies);
 
+            // Ensure CompanyId is explicitly mapped if AutoMapper fails
+            foreach (var company in companies)
+            {
+                var dto = companyDetailsDtos.FirstOrDefault(c => c.Name == company.Name);
+                if (dto != null)
+                {
+                    dto.CompanyId = company.CompanyId; // Direct assignment
+                }
+            }
+
             foreach (var company in companies)
             {
                 var companyDto = companyDetailsDtos.FirstOrDefault(c => c.Name == company.Name);
+                companyDto.CompanyId = company.CompanyId; // Explicitly assign the CompanyId
 
                 if (companyDto != null)
                 {
@@ -146,8 +136,34 @@ namespace CoworkingSpaceAPI.Controllers
                 });
             }
 
-            // Map the company to a DTO
-            var companyDetailsDtoList = _mapper.Map<List<CompanyDetailsDto>>(companies);
+            // Map the company to a DTO, including Address and AddressType manually
+            var companyDetailsDtoList = companies.Select(c => new CompanyDetailsDto
+            {
+                CompanyId = c.CompanyId,
+                Name = c.Name,
+                Industry = c.Industry,
+                Description = c.Description,
+                RegistrationNumber = c.RegistrationNumber,
+                TaxId = c.TaxId,
+                Website = c.Website,
+                ContactEmail = c.ContactEmail,
+                ContactPhone = c.ContactPhone,
+                FoundedDate = c.FoundedDate,
+                CeoUsername = c.CompanyCeos.FirstOrDefault()?.CeoUser?.UserName,
+                Street = c.CompanyAddresses.FirstOrDefault()?.Address?.Street ?? "",
+                HouseNumber = c.CompanyAddresses.FirstOrDefault()?.Address?.HouseNumber ?? "",
+                PostalCode = c.CompanyAddresses.FirstOrDefault()?.Address?.PostalCode ?? "",
+                City = c.CompanyAddresses.FirstOrDefault()?.Address?.City ?? "",
+                State = c.CompanyAddresses.FirstOrDefault()?.Address?.State ?? "",
+                Country = c.CompanyAddresses.FirstOrDefault()?.Address?.Country ?? "",
+                Type = c.CompanyAddresses.FirstOrDefault()?.AddressType?.AddressTypeName ?? "",
+                TypeDescription = c.CompanyAddresses.FirstOrDefault()?.AddressType?.Description ?? "",
+                CreatedAt = c.CompanyAddresses.FirstOrDefault()?.CreatedAt ?? DateTime.MinValue,
+                UpdatedAt = c.CompanyAddresses.FirstOrDefault()?.UpdatedAt,
+                IsDefault = c.CompanyAddresses.FirstOrDefault()?.IsDefault ?? false,
+                StartDate = c.CompanyCeos.FirstOrDefault()?.StartDate ?? DateOnly.MinValue,
+                EndDate = c.CompanyCeos.FirstOrDefault()?.EndDate
+            }).ToList();
 
             return Ok(new
             {
@@ -158,21 +174,14 @@ namespace CoworkingSpaceAPI.Controllers
             });
         }
 
-        [HttpPut("ceo/update-company-details")]
+        [HttpGet("ceo/get-all-employees")]
         [Authorize(Roles = "CEO")]
-        public async Task<IActionResult> UpdateCompanyDetails(
-            [FromBody] UpdateCompanyDetailsDto dto,
-            [FromQuery] string CompanyName,
-            [FromQuery] string Industry,
-            [FromQuery] DateOnly foundedDate,
-            [FromQuery] string registrationNumber,
-            [FromQuery] string taxId
-        )
+        public async Task<IActionResult> GetAllEmployees([FromQuery] int CompanyId)
         {
-            // Extract username from JWT
-            var username = User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            // Extract CEO username from JWT
+            var ceoUsername = User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-            if (string.IsNullOrWhiteSpace(username))
+            if (string.IsNullOrWhiteSpace(ceoUsername))
             {
                 return Unauthorized(new
                 {
@@ -181,171 +190,185 @@ namespace CoworkingSpaceAPI.Controllers
                 });
             }
 
-            // Find the user by username
-            var user = await _userManager.FindByNameAsync(username);
-            if (user == null)
+            // Find the CEO user
+            var ceoUser = await _userManager.FindByNameAsync(ceoUsername);
+            if (ceoUser == null)
             {
                 return NotFound(new
                 {
                     StatusCode = 404,
-                    Message = $"User with username '{username}' was not found."
+                    Message = "CEO not found."
                 });
             }
 
-            if (string.IsNullOrWhiteSpace(dto.FoundedDate?.ToString()))
-            {
-                dto.FoundedDate = null; // Set null if empty
-            }
-
-            // Find all companies matching the criteria
-            var companies = await _context.Companies
+            // Find the target company by parameters
+            var company = await _context.Companies
                 .Include(c => c.CompanyCeos)
-                .Where(c =>
-                    c.Name == CompanyName &&
-                    c.Industry == Industry &&
-                    c.FoundedDate == foundedDate &&
-                    c.RegistrationNumber == registrationNumber &&
-                    c.TaxId == taxId &&
-                    c.CompanyCeos.Any(cc => cc.CeoUserId == user.Id)
-                ).ToListAsync();
-
-            if (companies.Count == 0)
-            {
-                return NotFound(new
-                {
-                    StatusCode = 404,
-                    Message = "No company found matching the criteria or you are not authorized."
-                });
-            }
-            else if (companies.Count > 1)
-            {
-                return Conflict(new
-                {
-                    StatusCode = 409,
-                    Message = "Multiple companies match the criteria. Please provide more specific information."
-                });
-            }
-
-            // Genau eine Firma gefunden -> Update
-            var company = companies.First();
+                .FirstOrDefaultAsync(c =>
+                    c.CompanyId == CompanyId &&
+                    c.CompanyCeos.Any(cc => cc.CeoUserId == ceoUser.Id));
 
             if (company == null)
             {
                 return NotFound(new
                 {
                     StatusCode = 404,
-                    Message = "No company associated with the user."
+                    Message = "No matching company found or you are not authorized."
                 });
             }
 
-            // Track the changes
-            var changes = new List<string>();
+            // Retrieve all employees of the company
+            var employees = await _context.CompanyEmployees
+                .Where(e => e.CompanyId == company.CompanyId)
+                .Include(e => e.User)  // Join with AspNetUsers
+                .ToListAsync();
 
-            // Update only the fields provided in the DTO
-            if (!string.IsNullOrWhiteSpace(dto.Name) && dto.Name != company.Name)
+            if (!employees.Any())
             {
-                company.Name = dto.Name;
-                changes.Add($"Name updated to '{dto.Name}'.");
-            }
-
-            if (!string.IsNullOrWhiteSpace(dto.Industry) && dto.Industry != company.Industry)
-            {
-                company.Industry = dto.Industry;
-                changes.Add($"Industry updated to '{dto.Industry}'.");
-            }
-
-            if (!string.IsNullOrWhiteSpace(dto.Description) && dto.Description != company.Description)
-            {
-                company.Description = dto.Description;
-                changes.Add($"Description updated to '{dto.Description}'.");
-            }
-
-            if (!string.IsNullOrWhiteSpace(dto.RegistrationNumber) && dto.RegistrationNumber != company.RegistrationNumber)
-            {
-                company.RegistrationNumber = dto.RegistrationNumber;
-                changes.Add($"RegistrationNumber updated to '{dto.RegistrationNumber}'.");
-            }
-
-            if (!string.IsNullOrWhiteSpace(dto.TaxId) && dto.TaxId != company.TaxId)
-            {
-                company.TaxId = dto.TaxId;
-                changes.Add($"TaxId updated to '{dto.TaxId}'.");
-            }
-
-            if (!string.IsNullOrWhiteSpace(dto.Website) && dto.Website != company.Website)
-            {
-                company.Website = dto.Website;
-                changes.Add($"Website updated to '{dto.Website}'.");
-            }
-
-            if (!string.IsNullOrWhiteSpace(dto.ContactEmail) && dto.ContactEmail != company.ContactEmail)
-            {
-                company.ContactEmail = dto.ContactEmail;
-                changes.Add($"ContactEmail updated to '{dto.ContactEmail}'.");
-            }
-
-            if (!string.IsNullOrWhiteSpace(dto.ContactPhone) && dto.ContactPhone != company.ContactPhone)
-            {
-                company.ContactPhone = dto.ContactPhone;
-                changes.Add($"ContactPhone updated to '{dto.ContactPhone}'.");
-            }
-
-            if (dto.FoundedDate.HasValue && dto.FoundedDate.Value != company.FoundedDate)
-            {
-                company.FoundedDate = dto.FoundedDate.Value;
-                changes.Add($"FoundedDate updated to '{dto.FoundedDate.Value}'.");
-            }
-
-            // Save changes if any
-            if (changes.Count > 0)
-            {
-                await _context.SaveChangesAsync();
-
                 return Ok(new
                 {
                     StatusCode = 200,
-                    Message = "Company details updated successfully.",
-                    Changes = changes
+                    Message = "No employees found for this company.",
+                    Data = Array.Empty<EmployeeDetailsDto>()
                 });
+            }
+
+            // Map to DTO
+            var employeeDtos = _mapper.Map<List<EmployeeDetailsDto>>(employees);
+
+            return Ok(new
+            {
+                StatusCode = 200,
+                Message = "Employees retrieved successfully.",
+                Data = employeeDtos
+            });
+        }
+
+        [HttpPut("ceo/update-company-details")]
+        [Authorize(Roles = "CEO")]
+        public async Task<IActionResult> UpdateCompanyDetails(
+            [FromBody] UpdateCompanyDetailsDto dto,
+            [FromQuery] int companyId
+        )
+        {
+            // Extract username from JWT
+            var username = User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return Unauthorized(new { StatusCode = 401, Message = "User identity cannot be determined." });
+            }
+
+            // Find the user by username
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return NotFound(new { StatusCode = 404, Message = $"User with username '{username}' was not found." });
+            }
+
+            // Find the target company
+            var company = await _context.Companies
+                .Include(c => c.CompanyAddresses)
+                .FirstOrDefaultAsync(c =>
+                    c.CompanyId == companyId &&
+                    c.CompanyCeos.Any(cc => cc.CeoUserId == user.Id));
+
+            if (company == null)
+            {
+                return NotFound(new { StatusCode = 404, Message = "No company found matching the criteria or you are not authorized." });
+            }
+
+            // Map DTO to existing entity
+            _mapper.Map(dto, company, opts => opts.Items["Condition"] = (Func<object, bool>)(srcMember =>
+                srcMember != null && (srcMember is not string || !string.IsNullOrWhiteSpace(srcMember.ToString()))
+            ));
+
+            // Handle Address and AddressType updates
+            var addressType = await _context.AddressTypes
+                .FirstOrDefaultAsync(at => at.AddressTypeName == dto.AddressTypeName);
+
+            if (addressType == null)
+            {
+                addressType = new AddressType
+                {
+                    AddressTypeName = dto.AddressTypeName,
+                    Description = dto.Description
+                };
+                _context.AddressTypes.Add(addressType);
+            }
+
+            var address = await _context.Addresses
+                .FirstOrDefaultAsync(a =>
+                    a.Street == dto.Street &&
+                    a.HouseNumber == dto.HouseNumber &&
+                    a.PostalCode == dto.PostalCode &&
+                    a.City == dto.City &&
+                    a.State == dto.State &&
+                    a.Country == dto.Country);
+
+            if (address == null)
+            {
+                address = new Address
+                {
+                    Street = dto.Street,
+                    HouseNumber = dto.HouseNumber,
+                    PostalCode = dto.PostalCode,
+                    City = dto.City,
+                    State = dto.State,
+                    Country = dto.Country
+                };
+                _context.Addresses.Add(address);
+            }
+
+            var companyAddress = company.CompanyAddresses.FirstOrDefault();
+            if (companyAddress != null)
+            {
+                companyAddress.Address = address;
+                companyAddress.AddressType = addressType;
+                companyAddress.UpdatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                company.CompanyAddresses.Add(new CompanyAddress
+                {
+                    Address = address,
+                    AddressType = addressType,
+                    IsDefault = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            var updatedFields = new Dictionary<string, object>();
+
+            if (!string.IsNullOrWhiteSpace(dto.Name)) updatedFields["Name"] = dto.Name;
+            if (!string.IsNullOrWhiteSpace(dto.Industry)) updatedFields["Industry"] = dto.Industry;
+            if (!string.IsNullOrWhiteSpace(dto.Description)) updatedFields["Description"] = dto.Description;
+            if (!string.IsNullOrWhiteSpace(dto.RegistrationNumber)) updatedFields["RegistrationNumber"] = dto.RegistrationNumber;
+            if (!string.IsNullOrWhiteSpace(dto.TaxId)) updatedFields["TaxId"] = dto.TaxId;
+            if (!string.IsNullOrWhiteSpace(dto.Website)) updatedFields["Website"] = dto.Website;
+            if (!string.IsNullOrWhiteSpace(dto.ContactEmail)) updatedFields["ContactEmail"] = dto.ContactEmail;
+            if (!string.IsNullOrWhiteSpace(dto.ContactPhone)) updatedFields["ContactPhone"] = dto.ContactPhone;
+            if (!string.IsNullOrWhiteSpace(dto.Street)) updatedFields["Street"] = dto.Street;
+            if (!string.IsNullOrWhiteSpace(dto.HouseNumber)) updatedFields["HouseNumber"] = dto.HouseNumber;
+            if (!string.IsNullOrWhiteSpace(dto.PostalCode)) updatedFields["PostalCode"] = dto.PostalCode;
+            if (!string.IsNullOrWhiteSpace(dto.City)) updatedFields["City"] = dto.City;
+            if (!string.IsNullOrWhiteSpace(dto.State)) updatedFields["State"] = dto.State;
+            if (!string.IsNullOrWhiteSpace(dto.Country)) updatedFields["Country"] = dto.Country;
+
+            if (dto.FoundedDate.HasValue)
+            {
+                updatedFields["FoundedDate"] = dto.FoundedDate.Value;
             }
 
             return Ok(new
             {
                 StatusCode = 200,
-                Message = "No changes were made.",
-                Changes = changes
+                Message = "Company details and address updated successfully.",
+                UpdatedFields = updatedFields
             });
-        }
-
-        // PUT: api/Company/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCompany(int id, Company company)
-        {
-            if (id != company.CompanyId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(company).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CompanyExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
         }
 
         [HttpPost("ceo/register-company")]
@@ -429,15 +452,94 @@ namespace CoworkingSpaceAPI.Controllers
             });
         }
 
-        // POST: api/Company
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Company>> PostCompany(Company company)
+        [HttpPost("ceo/add-employee")]
+        [Authorize(Roles = "CEO")]
+        public async Task<IActionResult> AddEmployeeToCompany(
+            [FromBody] AddEmployeeDto dto,
+            [FromQuery] int companyId)
         {
-            _context.Companies.Add(company);
+            // Extract CEO username from JWT
+            var ceoUsername = User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(ceoUsername))
+            {
+                return Unauthorized(new
+                {
+                    StatusCode = 401,
+                    Message = "User identity cannot be determined."
+                });
+            }
+
+            // Find the CEO user
+            var ceoUser = await _userManager.FindByNameAsync(ceoUsername);
+            if (ceoUser == null)
+            {
+                return NotFound(new
+                {
+                    StatusCode = 404,
+                    Message = "CEO not found."
+                });
+            }
+
+            // Find the target company by parameters
+            var company = await _context.Companies
+                .Include(c => c.CompanyCeos)
+                .FirstOrDefaultAsync(c =>
+                    c.CompanyId == companyId &&
+                    c.CompanyCeos.Any(cc => cc.CeoUserId == ceoUser.Id));
+
+            if (company == null)
+            {
+                return NotFound(new
+                {
+                    StatusCode = 404,
+                    Message = "No matching company found or you are not authorized."
+                });
+            }
+
+            // Find the employee user by username
+            var employeeUser = await _userManager.FindByNameAsync(dto.EmployeeUsername);
+            if (employeeUser == null)
+            {
+                return NotFound(new
+                {
+                    StatusCode = 404,
+                    Message = $"User '{dto.EmployeeUsername}' not found."
+                });
+            }
+
+            // Check if employee already exists in the company
+            bool employeeExists = await _context.CompanyEmployees
+                .AnyAsync(e => e.CompanyId == company.CompanyId && e.UserId == employeeUser.Id);
+
+            if (employeeExists)
+            {
+                return Conflict(new
+                {
+                    StatusCode = 409,
+                    Message = "Employee already assigned to this company."
+                });
+            }
+
+            // Map DTO to CompanyEmployee entity
+            var companyEmployee = _mapper.Map<CompanyEmployee>(dto);
+            companyEmployee.UserId = employeeUser.Id;
+            companyEmployee.CompanyId = company.CompanyId;
+
+            _context.CompanyEmployees.Add(companyEmployee);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCompany", new { id = company.CompanyId }, company);
+            return Ok(new
+            {
+                StatusCode = 200,
+                Message = "Employee successfully added to the company.",
+                Data = new
+                {
+                    company.Name,
+                    dto.Position,
+                    dto.StartDate
+                }
+            });
         }
 
         [HttpDelete("ceo/delete-all-my-companies")]
@@ -511,8 +613,9 @@ namespace CoworkingSpaceAPI.Controllers
 
         [HttpDelete("ceo/delete-company")]
         [Authorize(Roles = "CEO")]
-        public async Task<IActionResult> DeleteCompany([FromBody] DeleteCompanyRequestDto dto)
+        public async Task<IActionResult> DeleteCompanyById([FromQuery] int companyId)
         {
+            // Extract CEO username from JWT
             var username = User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrWhiteSpace(username))
@@ -520,54 +623,148 @@ namespace CoworkingSpaceAPI.Controllers
                 return Unauthorized(new { StatusCode = 401, Message = "User identity cannot be determined." });
             }
 
+            // Find the company and validate CEO association
             var company = await _context.Companies
+                .Include(c => c.CompanyAddresses)
                 .Include(c => c.CompanyCeos)
-                    .ThenInclude(cc => cc.CeoUser)
+                .Include(c => c.CompanyEmployees)
                 .FirstOrDefaultAsync(c =>
-                    c.Name == dto.Name &&
-                    c.Industry == dto.Industry &&
-                    c.FoundedDate == dto.FoundedDate &&
-                    c.RegistrationNumber == dto.RegistrationNumber &&
-                    c.TaxId == dto.TaxId &&
+                    c.CompanyId == companyId &&
                     c.CompanyCeos.Any(cc => cc.CeoUser.UserName == username)
                 );
 
             if (company == null)
             {
-                return NotFound(new { StatusCode = 404, Message = "Company not found or you are not authorized." });
+                return NotFound(new
+                {
+                    StatusCode = 404,
+                    Message = "Company not found or you are not authorized to delete this company."
+                });
             }
 
-            // Lösche verknüpfte CEO-Einträge zuerst (sicherstellen, dass keine Null-Referenz auftritt)
-            var ceoEntries = company.CompanyCeos?
-                .Where(cc => cc.CeoUser != null && cc.CeoUser.UserName == username)
-                .ToList() ?? new List<CompanyCeo>();
+            // Delete associated addresses
+            var companyAddresses = company.CompanyAddresses.ToList();
+            if (companyAddresses.Any())
+            {
+                _context.CompanyAddresses.RemoveRange(companyAddresses);
+            }
 
-            _context.CompanyCeos.RemoveRange(ceoEntries);
+            // Delete associated employees
+            var companyEmployees = company.CompanyEmployees.ToList();
+            if (companyEmployees.Any())
+            {
+                _context.CompanyEmployees.RemoveRange(companyEmployees);
+            }
+
+            // Delete associated CEO entries
+            var ceoEntries = company.CompanyCeos.ToList();
+            if (ceoEntries.Any())
+            {
+                _context.CompanyCeos.RemoveRange(ceoEntries);
+            }
+
+            // Delete the company
             _context.Companies.Remove(company);
-            await _context.SaveChangesAsync();
 
-            return Ok(new { StatusCode = 200, Message = "Company deleted successfully." });
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Message = "Company and all associated records deleted successfully."
+                });
+            }
+            catch (DbUpdateException ex)
+            {
+                // Handle foreign key constraint errors if any
+                return BadRequest(new
+                {
+                    StatusCode = 400,
+                    Message = "Failed to delete the company due to linked data. Please try again or contact support.",
+                    Error = ex.InnerException?.Message
+                });
+            }
         }
 
-        // DELETE: api/Company/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCompany(int id)
+        [HttpDelete("ceo/delete-employee")]
+        [Authorize(Roles = "CEO")]
+        public async Task<IActionResult> DeleteEmployee(
+    [FromQuery] int companyId,
+    [FromQuery] string employeeUsername)
         {
-            var company = await _context.Companies.FindAsync(id);
+            // Extract CEO username from JWT
+            var ceoUsername = User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(ceoUsername))
+            {
+                return Unauthorized(new
+                {
+                    StatusCode = 401,
+                    Message = "User identity cannot be determined."
+                });
+            }
+
+            // Find the CEO user
+            var ceoUser = await _userManager.FindByNameAsync(ceoUsername);
+            if (ceoUser == null)
+            {
+                return NotFound(new
+                {
+                    StatusCode = 404,
+                    Message = "CEO not found."
+                });
+            }
+
+            // Check if the company belongs to the CEO
+            var company = await _context.Companies
+                .Include(c => c.CompanyCeos)
+                .FirstOrDefaultAsync(c =>
+                    c.CompanyId == companyId &&
+                    c.CompanyCeos.Any(cc => cc.CeoUserId == ceoUser.Id));
+
             if (company == null)
             {
-                return NotFound();
+                return NotFound(new
+                {
+                    StatusCode = 404,
+                    Message = "No company found matching the criteria or you are not authorized."
+                });
             }
 
-            _context.Companies.Remove(company);
+            // Find the employee by username
+            var employee = await _userManager.FindByNameAsync(employeeUsername);
+            if (employee == null)
+            {
+                return NotFound(new
+                {
+                    StatusCode = 404,
+                    Message = $"Employee with username '{employeeUsername}' not found."
+                });
+            }
+
+            // Check if the employee is part of the company
+            var companyEmployee = await _context.CompanyEmployees
+                .FirstOrDefaultAsync(e => e.CompanyId == company.CompanyId && e.UserId == employee.Id);
+
+            if (companyEmployee == null)
+            {
+                return NotFound(new
+                {
+                    StatusCode = 404,
+                    Message = $"Employee '{employeeUsername}' is not part of this company."
+                });
+            }
+
+            // Remove the employee from the company
+            _context.CompanyEmployees.Remove(companyEmployee);
             await _context.SaveChangesAsync();
 
-            return NoContent();
-        }
-
-        private bool CompanyExists(int id)
-        {
-            return _context.Companies.Any(e => e.CompanyId == id);
+            return Ok(new
+            {
+                StatusCode = 200,
+                Message = $"Employee '{employeeUsername}' has been successfully removed from {company.Name}."
+            });
         }
     }
 }

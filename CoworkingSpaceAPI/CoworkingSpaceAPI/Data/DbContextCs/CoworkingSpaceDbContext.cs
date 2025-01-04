@@ -15,29 +15,17 @@ public partial class CoworkingSpaceDbContext : IdentityDbContext<ApplicationUser
     }
 
     public virtual DbSet<Address> Addresses { get; set; }
-
     public virtual DbSet<AddressType> AddressTypes { get; set; }
-
     public virtual DbSet<Booking> Bookings { get; set; }
-
     public virtual DbSet<Company> Companies { get; set; }
-
     public virtual DbSet<CompanyAddress> CompanyAddresses { get; set; }
-
     public virtual DbSet<CompanyCeo> CompanyCeos { get; set; }
-
     public virtual DbSet<CompanyEmployee> CompanyEmployees { get; set; }
-
     public virtual DbSet<Desk> Desks { get; set; }
-
     public virtual DbSet<Label> Labels { get; set; }
-
     public virtual DbSet<LabelAssignment> LabelAssignments { get; set; }
-
     public virtual DbSet<Room> Rooms { get; set; }
-
     public virtual DbSet<UserAddress> UserAddresses { get; set; }
-
     public virtual DbSet<UserSession> UserSessions { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -99,28 +87,35 @@ public partial class CoworkingSpaceDbContext : IdentityDbContext<ApplicationUser
             entity.ToTable("Booking");
 
             entity.Property(e => e.BookingId).HasColumnName("booking_id");
+
             entity.Property(e => e.CancellationReason)
                 .HasMaxLength(255)
                 .HasColumnName("cancellation_reason");
+
             entity.Property(e => e.CreatedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
+
             entity.Property(e => e.DeskId).HasColumnName("desk_id");
             entity.Property(e => e.EndTime)
                 .HasColumnType("datetime")
                 .HasColumnName("end_time");
+
             entity.Property(e => e.IsCancelled).HasColumnName("is_cancelled");
             entity.Property(e => e.IsCheckedIn).HasColumnName("is_checked_in");
             entity.Property(e => e.StartTime)
                 .HasColumnType("datetime")
                 .HasColumnName("start_time");
-            entity.Property(e => e.TotalCost)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("total_cost");
+
             entity.Property(e => e.UpdatedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("updated_at");
             entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.Room).WithMany(p => p.Bookings)
+                .HasForeignKey(d => d.RoomId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Booking__room_id");
 
             entity.HasOne(d => d.Desk).WithMany(p => p.Bookings)
                 .HasForeignKey(d => d.DeskId)

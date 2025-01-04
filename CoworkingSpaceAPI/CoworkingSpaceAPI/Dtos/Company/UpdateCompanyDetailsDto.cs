@@ -13,6 +13,14 @@ namespace CoworkingSpaceAPI.Dtos.Company.Request
         public string Website { get; set; } = string.Empty;
         public string ContactEmail { get; set; } = string.Empty;
         public string ContactPhone { get; set; } = string.Empty;
+        public string AddressTypeName { get; set; } = string.Empty;
+        public string AddressDescription { get; set; } = string.Empty;
+        public string Street { get; set; } = string.Empty;
+        public string HouseNumber { get; set; } = string.Empty;
+        public string PostalCode { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public string Country { get; set; } = string.Empty;
 
         [JsonConverter(typeof(NullableDateOnlyConverter))]
         public DateOnly? FoundedDate { get; set; }
