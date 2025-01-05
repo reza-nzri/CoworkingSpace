@@ -11,6 +11,8 @@ import {
   faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 import CompanyDetailsList from './CompanyDetailsList';
+import ManageEmployees from './ManageEmployees';
+import RoomManagement from './room/RoomManagement';
 
 const CompanyPage = () => {
   const [companies] = useState([
@@ -143,6 +145,8 @@ const CompanyPage = () => {
       </div>
 
       <CompanyDetailsList />
+      <ManageEmployees />
+      <RoomManagement />
     </div>
   );
 };

@@ -1,5 +1,7 @@
 CoworkingSpace/web-app/
   ├─].next/ (ignored)
+  ├─ .vscode/
+  │  └─ sessions.json
   ├─]node_modules/ (ignored)
   ├─ public/
   │  └─ media/
@@ -22,14 +24,24 @@ CoworkingSpace/web-app/
   │     │  ├─ accountApi.tsx
   │     │  ├─ addressApi.tsx
   │     │  ├─ authApi.tsx
-  │     │  └─ PrivateRoute.tsx
+  │     │  ├─ companyApi.tsx
+  │     │  ├─ PrivateRoute.tsx
+  │     │  └─ upload-room-plan.ts
   │     ├─ booking/
   │     │  └─ page.tsx
   │     ├─ ceo/
   │     │  └─ page.tsx
   │     ├─ company/
-  │     │  ├─ new.tsx
-  │     │  └─ page.tsx
+  │     │  ├─ room/
+  │     │  │  ├─ map-cloud/
+  │     │  │  │  └─ Sigma-GmbH-51_Asad_20250102_d152dD_s25D.png
+  │     │  │  ├─ RoomManagement.tsx
+  │     │  │  └─ UploadRoomPlan.tsx
+  │     │  ├─ CompanyDetailsList.tsx
+  │     │  ├─ EditCompanyModal.tsx
+  │     │  ├─ ManageEmployees.tsx
+  │     │  ├─ page.tsx
+  │     │  └─ RegisterCompanyModal.tsx
   │     ├─ components/
   │     │  ├─ common/
   │     │  │  ├─ Button.tsx
@@ -39,10 +51,9 @@ CoworkingSpace/web-app/
   │     │  │  ├─ Modal.tsx
   │     │  │  └─ Tooltip.tsx
   │     │  ├─ forms/
-  │     │  │  ├─ auth/
-  │     │  │  │  ├─ LoginForm.tsx
-  │     │  │  │  └─ RegisterForm.tsx
-  │     │  │  └─ CompanyForm.tsx
+  │     │  │  └─ auth/
+  │     │  │     ├─ LoginForm.tsx
+  │     │  │     └─ RegisterForm.tsx
   │     │  ├─ layout/
   │     │  │  ├─ navbar/
   │     │  │  │  ├─ LanguageDropdown.tsx

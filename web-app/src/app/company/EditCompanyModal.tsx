@@ -8,17 +8,19 @@ import axios from 'axios';
 interface EditCompanyModalProps {
   company: Company | null;
   onClose: () => void;
-  onUpdate: () => void;
   isOpen: boolean;
+  onUpdate: () => void;
 }
 
 const EditCompanyModal: React.FC<EditCompanyModalProps> = ({
   company,
   onClose,
-  onUpdate,
   isOpen,
+  onUpdate,
 }) => {
-    const [formData, setFormData] = useState<Company | null>(null); 
+  const [formData, setFormData] = useState<
+    Partial<Record<string, string | boolean | null | number>>
+  >({});
 
   useEffect(() => {
     if (company && isOpen) {
@@ -26,67 +28,69 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({
     }
   }, [company, isOpen]);
 
-  if (!isOpen || !formData) return null;  // Prevent rendering if modal is not open
+  if (!isOpen || !formData) return null; // Prevent rendering if modal is not open
 
   // Handle input changes
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev!,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
+      [name]:
+        type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
-  const handleSubmit = async () => {
-    const updatedData: Partial<Record<string, string | null | boolean>> = {
-      ...formData,
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const updatedData: Partial<Record<string, string | boolean | null | number>> = {
+      name: formData.name || null,
+      industry: formData.industry || null,
+      description: formData.description || null,
       registrationNumber: formData.registrationNumber || null,
       taxId: formData.taxId || null,
-      isDefault: formData.isDefault,
-    };
-  
-    const confirmEdit = confirm('Are you sure you want to save these changes?');
-    if (!confirmEdit) return;
-  
-    if (!company) {
-        console.error('Company data is missing.');
-        return;
-      }
-      
-      const queryParams = {
-        CompanyName: company?.name || '',
-        Industry: company?.industry || '',
-        foundedDate: company?.foundedDate || '',
-        registrationNumber: company?.registrationNumber || '',
-        taxId: company?.taxId || '',
-      };          
-  
+      website: formData.website || null,
+      contactEmail: formData.contactEmail || null,
+      contactPhone: formData.contactPhone || null,
+      street: formData.street || null,
+      houseNumber: formData.houseNumber || null,
+      postalCode: formData.postalCode || null,
+      city: formData.city || null,
+      state: formData.state || null,
+      country: formData.country || null,
+      foundedDate: formData.foundedDate || null,
+    };    
+
     // console.log('Updating with data:', updatedData);
-    // console.log('Query Params:', queryParams);
-  
+    if (company) {
+      // console.log('Query Params:', { companyId: company.companyId });
+    }
+
     try {
-      const response = await updateCompanyDetails(
-        updatedData,
-        queryParams.CompanyName,
-        queryParams.Industry,
-        queryParams.foundedDate,
-        queryParams.registrationNumber,
-        queryParams.taxId
-      );
-      alert(response.message || 'Company details updated successfully.');
-      onUpdate();
-      onClose();
+      if (company) {
+        const response = await updateCompanyDetails(
+          updatedData,
+          company.companyId
+        );
+        alert(response.message || 'Company updated successfully.');
+        if (onUpdate) {
+          onUpdate(); // Trigger the parent update function after successful update
+        }
+        onClose();
+      }
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        alert(error.response.data.message || 'Failed to update company.');
+      console.error('Error updating company:', error);
+      if (axios.isAxiosError(error)) {
+        alert(error.response?.data?.message || 'Failed to update the company.');
       } else {
-        alert('An unexpected error occurred.');
+        alert('Failed to update the company.');
       }
     }
   };
-  
 
   return (
     <div
@@ -112,7 +116,7 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({
             <input
               type="text"
               name="name"
-              value={formData.name}
+              value={typeof formData.name === 'string' || typeof formData.name === 'number' ? formData.name : ''}
               onChange={handleChange}
               className="w-full p-2 bg-gray-700 rounded text-white"
             />
@@ -123,7 +127,105 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({
             <input
               type="text"
               name="industry"
-              value={formData.industry}
+              value={typeof formData.industry === 'string' || typeof formData.industry === 'number' ? formData.industry : ''}
+              onChange={handleChange}
+              className="w-full p-2 bg-gray-700 rounded text-white"
+            />
+          </div>
+
+          <div>
+            <label className="text-white">Description</label>
+            <textarea
+              name="description"
+              value={typeof formData.description === 'string' || typeof formData.description === 'number' ? formData.description : ''}
+              onChange={handleChange}
+              className="w-full p-2 bg-gray-700 rounded text-white"
+            />
+          </div>
+
+          <div>
+            <label className="text-white">Street</label>
+            <input
+              type="text"
+              name="street"
+              value={typeof formData.street === 'string' || typeof formData.street === 'number' ? formData.street : ''}
+              onChange={handleChange}
+              className="w-full p-2 bg-gray-700 rounded text-white"
+            />
+          </div>
+
+          <div>
+            <label className="text-white">House Number</label>
+            <input
+              type="text"
+              name="houseNumber"
+              value={typeof formData.houseNumber === 'string' || typeof formData.houseNumber === 'number' ? formData.houseNumber : ''}
+              onChange={handleChange}
+              className="w-full p-2 bg-gray-700 rounded text-white"
+            />
+          </div>
+
+          <div>
+            <label className="text-white">Postal Code</label>
+            <input
+              type="text"
+              name="postalCode"
+              value={typeof formData.postalCode === 'string' || typeof formData.postalCode === 'number' ? formData.postalCode : ''}
+              onChange={handleChange}
+              className="w-full p-2 bg-gray-700 rounded text-white"
+            />
+          </div>
+
+          <div>
+            <label className="text-white">City</label>
+            <input
+              type="text"
+              name="city"
+              value={typeof formData.city === 'string' || typeof formData.city === 'number' ? formData.city : ''}
+              onChange={handleChange}
+              className="w-full p-2 bg-gray-700 rounded text-white"
+            />
+          </div>
+
+          <div>
+            <label className="text-white">State</label>
+            <input
+              type="text"
+              name="state"
+              value={typeof formData.state === 'string' || typeof formData.state === 'number' ? formData.state : ''}
+              onChange={handleChange}
+              className="w-full p-2 bg-gray-700 rounded text-white"
+            />
+          </div>
+
+          <div>
+            <label className="text-white">Country</label>
+            <input
+              type="text"
+              name="country"
+              value={typeof formData.country === 'string' || typeof formData.country === 'number' ? formData.country : ''}
+              onChange={handleChange}
+              className="w-full p-2 bg-gray-700 rounded text-white"
+            />
+          </div>
+
+          <div>
+            <label className="text-white">Founded Date</label>
+            <input
+              type="date"
+              name="foundedDate"
+              value={typeof formData.foundedDate === 'string' || typeof formData.foundedDate === 'number' ? formData.foundedDate : ''}
+              onChange={handleChange}
+              className="w-full p-2 bg-gray-700 rounded text-white"
+            />
+          </div>
+
+          <div>
+            <label className="text-white">Industry</label>
+            <input
+              type="text"
+              name="industry"
+              value={typeof formData.industry === 'string' || typeof formData.industry === 'number' ? formData.industry : ''}
               onChange={handleChange}
               className="w-full p-2 bg-gray-700 rounded text-white"
             />
@@ -134,7 +236,7 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({
             <input
               type="text"
               name="taxId"
-              value={formData.taxId || ''}
+              value={typeof formData.taxId === 'string' || typeof formData.taxId === 'number' ? formData.taxId : ''}
               onChange={handleChange}
               className="w-full p-2 bg-gray-700 rounded text-white"
             />
@@ -145,7 +247,7 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({
             <input
               type="text"
               name="registrationNumber"
-              value={formData.registrationNumber || ''}
+              value={typeof formData.registrationNumber === 'string' || typeof formData.registrationNumber === 'number' ? formData.registrationNumber : ''}
               onChange={handleChange}
               className="w-full p-2 bg-gray-700 rounded text-white"
             />
@@ -156,7 +258,7 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({
             <input
               type="email"
               name="contactEmail"
-              value={formData.contactEmail || ''}
+              value={typeof formData.contactEmail === 'string' || typeof formData.contactEmail === 'number' ? formData.contactEmail : ''}
               onChange={handleChange}
               className="w-full p-2 bg-gray-700 rounded text-white"
             />
@@ -167,7 +269,7 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({
             <input
               type="url"
               name="website"
-              value={formData.website || ''}
+              value={typeof formData.website === 'string' || typeof formData.website === 'number' ? formData.website : ''}
               onChange={handleChange}
               className="w-full p-2 bg-gray-700 rounded text-white"
             />
@@ -178,7 +280,7 @@ const EditCompanyModal: React.FC<EditCompanyModalProps> = ({
             <input
               type="checkbox"
               name="isDefault"
-              checked={formData.isDefault}
+              checked={!!formData.isDefault}
               onChange={handleChange}
               className="w-5 h-5 ml-2"
             />

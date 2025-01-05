@@ -15,15 +15,16 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 export interface Company {
+  companyId: number;
   name: string;
   industry: string;
-  description: string | null;
-  registrationNumber: string | null;
-  taxId: string | null;
-  website: string | null;
-  contactEmail: string | null;
-  contactPhone: string | null;
-  foundedDate: string;
+  description: string;
+  registrationNumber: string;
+  taxId: string;
+  website: string;
+  contactEmail: string;
+  contactPhone: string;
+  foundedDate: string | null;
   street: string;
   houseNumber: string;
   postalCode: string;
@@ -57,22 +58,50 @@ const CompanyDetailsList = () => {
     setIsEditModalOpen(false);
   };
 
-  const handleUpdate = () => {
-    // Refresh the company list after update (implement fetch logic)
-    alert('Company list refreshed.');
-  };
+  const handleUpdate = async () => {
+    try {
+      const response = await getCeoCompanyDetails();
+      if (response && response.success) {
+        setCompanies(response.data);
+      } else {
+        console.warn('Failed to fetch companies:', response?.message);
+        setError(response?.message || 'No companies associated with the user.');
+      }
+    } catch (error) {
+      console.error('Error fetching updated company details:', error);
+      setError('Failed to refresh the company list.');
+    }
+  };  
 
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
+        // console.log('Fetching company details...');
         const response = await getCeoCompanyDetails();
-        if (response.success) {
+        if (response && response.success) {
+          // console.log('Company Details Response:', response.data);
           setCompanies(response.data);
         } else {
-          setError(response.message || 'Failed to fetch companies.');
+          console.warn('Failed to fetch companies:', response?.message);
+          setError(response?.message || 'No companies associated with the user.');
+        }        
+      } catch (error) {
+        console.error('Error fetching company details:', error);
+
+        if (axios.isAxiosError(error) && error.response) {
+          const { statusCode, message } = error.response.data;
+          if (statusCode === 404) {
+            setError(
+              'No company details found. Ensure the user is associated with a company or has CEO permissions.'
+            );
+          } else if (statusCode === 401) {
+            setError('Unauthorized. Please ensure you are logged in as a CEO.');
+          } else {
+            setError(message || 'Failed to fetch company details.');
+          }
+        } else {
+          setError('An unexpected error occurred. Please try again.');
         }
-      } catch {
-        setError('Error fetching companies. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -95,20 +124,11 @@ const CompanyDetailsList = () => {
     );
     if (!confirmDelete) return;
 
-    const deletePayload = {
-      name: company.name,
-      industry: company.industry,
-      foundedDate: new Date(company.foundedDate).toISOString().split('T')[0],
-      registrationNumber: company.registrationNumber
-        ? company.registrationNumber
-        : null,
-      taxId: company.taxId ? company.taxId : null,
-    };
-
-    console.log('Delete Payload:', deletePayload); // Debugging zur Überprüfung der gesendeten Daten
+    const deletePayload = {companyId: company.companyId,};
+    // console.log('Delete Payload:', deletePayload); 
 
     try {
-      const response = await deleteCompany(deletePayload);
+      const response = await deleteCompany(company.companyId);  
       alert(response.message || 'Company deleted successfully.');
       setCompanies(companies.filter((c) => c.name !== company.name));
     } catch (error) {
@@ -154,7 +174,7 @@ const CompanyDetailsList = () => {
   };
 
   return (
-    <div className="container mx-auto my-20 py-5">
+    <div className="container mx-auto mt-20 mb-10 p-5 bg-gray-800 rounded-lg">
       <h2 className="text-3xl font-bold text-center text-white mb-6">
         Company Details
       </h2>
@@ -162,7 +182,7 @@ const CompanyDetailsList = () => {
         {companies.map((company, index) => (
           <div
             key={index}
-            className="bg-gray-800 p-6 rounded-lg shadow-lg hover:-translate-y-3 hover:scale-105 transition duration-300 hover:shadow-xl"
+            className="bg-gray-700 p-6 rounded-lg shadow-lg hover:-translate-y-3 hover:scale-105 transition duration-300 hover:shadow-xl"
           >
             <h3 className="text-2xl font-semibold text-green-500 mb-4">
               {company.name}
@@ -216,12 +236,12 @@ const CompanyDetailsList = () => {
         <EditCompanyModal
           company={selectedCompany}
           onClose={closeEditModal}
-          onUpdate={handleUpdate}
           isOpen={isEditModalOpen}
+          onUpdate={handleUpdate}
         />
       ) : null}
 
-      <div className="text-center my-12">
+      <div className="text-center mt-10 mb-3">
         <button
           onClick={handleDeleteAll}
           className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300"
