@@ -35,47 +35,31 @@ namespace CoworkingSpaceAPI.Controllers
             _mapper = mapper;
         }
 
-        // Get all users and their roles
         [HttpGet("admin/get-all-users")]
         [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> GetUsers()
         {
-            var users = await _userManager.Users.ToListAsync(); // Retrieve all users
-            var usersWithRoles = new List<object>(); // Create a list to hold users with roles
+            var users = await _userManager.Users.ToListAsync();
 
-            // Iterate through each user and retrieve their roles
+            // Map to DTO and fetch roles
+            var userDtos = new List<AdminUserDetailsDto>();
+
             foreach (var user in users)
             {
-                var roles = await _userManager.GetRolesAsync(user); // Get roles for the user
+                var roles = await _userManager.GetRolesAsync(user);
 
-                // Create an anonymous object containing the user's details and roles
-                var userWithRoles = new
-                {
-                    user.FirstName,
-                    user.LastName,
-                    user.Id,
-                    user.UserName,
-                    user.NormalizedUserName,
-                    user.Email,
-                    user.NormalizedEmail,
-                    user.EmailConfirmed,
-                    user.PasswordHash,
-                    user.SecurityStamp,
-                    user.ConcurrencyStamp,
-                    user.PhoneNumber,
-                    user.PhoneNumberConfirmed,
-                    user.TwoFactorEnabled,
-                    user.LockoutEnd,
-                    user.LockoutEnabled,
-                    user.AccessFailedCount,
-                    Roles = roles.ToList() // Convert roles to a list
-                };
+                var userDto = _mapper.Map<AdminUserDetailsDto>(user);
+                userDto.Roles = roles.ToList();  // Map roles separately
 
-                usersWithRoles.Add(userWithRoles); // Add the user with roles to the list
+                userDtos.Add(userDto);
             }
 
-            // Return the list of users with their roles
-            return Ok(usersWithRoles);
+            return Ok(new
+            {
+                StatusCode = 200,
+                Message = "Users retrieved successfully.",
+                Data = userDtos
+            });
         }
 
         // Get user details using JWT token

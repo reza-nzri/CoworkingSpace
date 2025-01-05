@@ -8,6 +8,7 @@ public partial class Booking
     public int? DeskId { get; set; }
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
+    public decimal TotalCost { get; set; }
     public bool IsCancelled { get; set; }
     public string? CancellationReason { get; set; }
     public bool IsCheckedIn { get; set; }

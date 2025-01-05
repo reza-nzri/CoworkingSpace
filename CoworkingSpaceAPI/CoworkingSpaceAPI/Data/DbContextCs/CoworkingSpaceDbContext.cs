@@ -101,6 +101,10 @@ public partial class CoworkingSpaceDbContext : IdentityDbContext<ApplicationUser
                 .HasColumnType("datetime")
                 .HasColumnName("end_time");
 
+            entity.Property(e => e.TotalCost)
+                 .HasColumnType("decimal(10, 2)")
+                 .HasColumnName("total_cost");
+
             entity.Property(e => e.IsCancelled).HasColumnName("is_cancelled");
             entity.Property(e => e.IsCheckedIn).HasColumnName("is_checked_in");
             entity.Property(e => e.StartTime)

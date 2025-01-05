@@ -4,6 +4,7 @@ using CoworkingSpaceAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CoworkingSpaceAPI.Migrations
 {
     [DbContext(typeof(CoworkingSpaceDbContext))]
-    partial class CoworkingSpaceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250104194843_Add TotalCost to Booking")]
+    partial class AddTotalCosttoBooking
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

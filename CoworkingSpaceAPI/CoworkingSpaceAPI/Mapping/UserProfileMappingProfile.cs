@@ -2,6 +2,9 @@
 using CoworkingSpaceAPI.Dtos.Address.Request;
 using CoworkingSpaceAPI.Dtos.Auth.Request;
 using CoworkingSpaceAPI.Dtos.Auth.Response;
+using CoworkingSpaceAPI.Dtos.Booking.Request;
+using CoworkingSpaceAPI.Dtos.Booking.Response;
+using CoworkingSpaceAPI.Dtos.Booking.Response.CoworkingSpaceAPI.Dtos.Booking;
 using CoworkingSpaceAPI.Dtos.CEO.CoworkingSpaceAPI.Dtos.Company.Response;
 using CoworkingSpaceAPI.Dtos.Company.Request;
 using CoworkingSpaceAPI.Dtos.Company.Response;
@@ -17,6 +20,9 @@ namespace CoworkingSpaceAPI.Mapping
     {
         public UserProfileMappingProfile()
         {
+            CreateMap<ApplicationUserModel, AdminUserDetailsDto>()
+                .ForMember(dest => dest.Roles, opt => opt.Ignore());
+
             // Mapping from ApplicationUserModel to UserDetailsDto
             CreateMap<ApplicationUserModel, UserDetailsDto>()
                 .ForMember(dest => dest.Roles, opt => opt.Ignore()); // Roles will be set separately
@@ -151,6 +157,65 @@ namespace CoworkingSpaceAPI.Mapping
                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt));
+
+            CreateMap<Booking, BookingDetailsDto>()
+                .ForMember(dest => dest.RoomName, opt => opt.MapFrom(src => src.Room.RoomName))
+                .ForMember(dest => dest.RoomType, opt => opt.MapFrom(src => src.Room.RoomType))
+                .ForMember(dest => dest.DeskName, opt => opt.MapFrom(src => src.Desk.DeskName))
+                .ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src => src.Room.CompanyAddress.Company.Name))
+                .ForMember(dest => dest.Industry, opt => opt.MapFrom(src => src.Room.CompanyAddress.Company.Industry))
+                .ForMember(dest => dest.Website, opt => opt.MapFrom(src => src.Room.CompanyAddress.Company.Website));
+
+            CreateMap<Booking, BookingDetailsDto>()
+                .ForMember(dest => dest.RoomName, opt => opt.MapFrom(src => src.Room.RoomName))
+                .ForMember(dest => dest.RoomType, opt => opt.MapFrom(src => src.Room.RoomType))
+                .ForMember(dest => dest.DeskName, opt => opt.MapFrom(src => src.Desk.DeskName))
+                .ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src => src.Room.CompanyAddress.Company.Name))
+                .ForMember(dest => dest.Industry, opt => opt.MapFrom(src => src.Room.CompanyAddress.Company.Industry))
+                .ForMember(dest => dest.Website, opt => opt.MapFrom(src => src.Room.CompanyAddress.Company.Website));
+
+            CreateMap<UpdateBookingDto, Booking>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+            CreateMap<Desk, CheckAvailabilityDeskDto>()
+                .ForMember(dest => dest.RoomName, opt => opt.MapFrom(src => src.Room.RoomName))
+                .ForMember(dest => dest.RoomId, opt => opt.MapFrom(src => src.RoomId));
+
+            CreateMap<Booking, GetBookingByUsername>()
+                .ForMember(dest => dest.RoomName, opt => opt.MapFrom(src => src.Room.RoomName))
+                .ForMember(dest => dest.DeskName, opt => opt.MapFrom(src => src.Desk.DeskName))
+                .ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src => src.Room.CompanyAddress.Company.Name))
+                .ForMember(dest => dest.Industry, opt => opt.MapFrom(src => src.Room.CompanyAddress.Company.Industry))
+                .ForMember(dest => dest.Website, opt => opt.MapFrom(src => src.Room.CompanyAddress.Company.Website));
+
+            CreateMap<Booking, MonthlyCostReportDto>()
+                .ForMember(dest => dest.RoomName, opt => opt.MapFrom(src => src.Room.RoomName))
+                .ForMember(dest => dest.DeskName, opt => opt.MapFrom(src => src.Desk != null ? src.Desk.DeskName : null))
+                .ForMember(dest => dest.TotalCost, opt => opt.MapFrom(src => src.TotalCost))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt));
+
+            CreateMap<Booking, BookingStatisticsDto>()
+                .ForMember(dest => dest.RoomId, opt => opt.MapFrom(src => src.RoomId))
+                .ForMember(dest => dest.RoomName, opt => opt.MapFrom(src => src.Room.RoomName))
+                .ForMember(dest => dest.DeskId, opt => opt.MapFrom(src => src.DeskId))
+                .ForMember(dest => dest.DeskName, opt => opt.MapFrom(src => src.Desk.DeskName))
+                .ForMember(dest => dest.TotalRevenue, opt => opt.MapFrom(src => src.TotalCost))
+                .ForMember(dest => dest.TotalBookings, opt => opt.MapFrom(src => 1));  // Each booking counts as 1
+
+            CreateMap<Booking, NoShowBookingDto>()
+                .ForMember(dest => dest.RoomName, opt => opt.MapFrom(src => src.Room.RoomName))
+                .ForMember(dest => dest.DeskId, opt => opt.MapFrom(src => src.DeskId));
+
+            CreateMap<Booking, RevenueBreakdownDto>()
+                .ForMember(dest => dest.TotalRevenue, opt => opt.MapFrom(src => src.TotalCost));
+
+            CreateMap<Room, RoomOccupancyDto>()
+                .ForMember(dest => dest.RoomId, opt => opt.MapFrom(src => src.RoomId))
+                .ForMember(dest => dest.RoomName, opt => opt.MapFrom(src => src.RoomName));
+
+            CreateMap<Desk, DeskOccupancyDto>()
+                .ForMember(dest => dest.DeskId, opt => opt.MapFrom(src => src.DeskId))
+                .ForMember(dest => dest.DeskName, opt => opt.MapFrom(src => src.DeskName));
         }
     }
 }
