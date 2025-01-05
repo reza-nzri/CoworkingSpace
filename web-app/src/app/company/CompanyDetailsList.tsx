@@ -9,10 +9,7 @@ import {
 import axios from 'axios';
 import EditCompanyModal from './EditCompanyModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faTrash, 
-  faEdit,
-} from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faEdit, faBuilding } from '@fortawesome/free-solid-svg-icons';
 
 export interface Company {
   companyId: number;
@@ -71,7 +68,7 @@ const CompanyDetailsList = () => {
       console.error('Error fetching updated company details:', error);
       setError('Failed to refresh the company list.');
     }
-  };  
+  };
 
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -83,8 +80,10 @@ const CompanyDetailsList = () => {
           setCompanies(response.data);
         } else {
           console.warn('Failed to fetch companies:', response?.message);
-          setError(response?.message || 'No companies associated with the user.');
-        }        
+          setError(
+            response?.message || 'No companies associated with the user.'
+          );
+        }
       } catch (error) {
         console.error('Error fetching company details:', error);
 
@@ -124,11 +123,11 @@ const CompanyDetailsList = () => {
     );
     if (!confirmDelete) return;
 
-    const deletePayload = {companyId: company.companyId,};
-    // console.log('Delete Payload:', deletePayload); 
+    const deletePayload = { companyId: company.companyId };
+    // console.log('Delete Payload:', deletePayload);
 
     try {
-      const response = await deleteCompany(company.companyId);  
+      const response = await deleteCompany(company.companyId);
       alert(response.message || 'Company deleted successfully.');
       setCompanies(companies.filter((c) => c.name !== company.name));
     } catch (error) {
@@ -184,21 +183,23 @@ const CompanyDetailsList = () => {
             key={index}
             className="bg-gray-700 p-6 rounded-lg shadow-lg hover:-translate-y-3 hover:scale-105 transition duration-300 hover:shadow-xl"
           >
-            <h3 className="text-2xl font-semibold text-green-500 mb-4">
+            <h3 className="text-4xl font-bold animate-fade-in text-white mb-4">
+              <FontAwesomeIcon icon={faBuilding} className="text-green-500" />{' '}
               {company.name}
             </h3>
-            <p className="text-gray-300">
-              <strong>Industry:</strong> {company.industry}
-            </p>
-            <p className="text-gray-300">
-              <strong>Description:</strong> {company.description || 'N/A'}
-            </p>
-            <p className="text-gray-300">
-              <strong>CEO:</strong> {company.ceoUsername}
-            </p>
-            <p className="text-gray-300">
-              <strong>Founded Date:</strong> {company.foundedDate}
-            </p>
+
+            {Object.entries(company)
+              .filter(
+                ([key, value]) =>
+                  value !== '' && value !== null && key !== 'companyId'
+              )
+              .map(([key, value]) => (
+                <p key={key} className="text-gray-300">
+                  <strong>{key.charAt(0).toUpperCase() + key.slice(1)}:</strong>{' '}
+                  {value}
+                </p>
+              ))}
+
             {company.website && (
               <p className="text-blue-500 hover:underline">
                 <a
@@ -211,8 +212,7 @@ const CompanyDetailsList = () => {
               </p>
             )}
 
-
-          {/* Action Buttons */}
+            {/* Action Buttons */}
             <div className="flex mt-4 gap-4 flex-wrap">
               <button
                 onClick={() => handleDelete(company)}
@@ -220,7 +220,7 @@ const CompanyDetailsList = () => {
               >
                 <FontAwesomeIcon icon={faTrash} />
               </button>
-            
+
               <button
                 onClick={() => openEditModal(company)}
                 className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-md"

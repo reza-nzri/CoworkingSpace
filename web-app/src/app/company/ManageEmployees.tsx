@@ -11,6 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
 interface Company {
+  companyId: number; // Add companyId to the Company interface
   name: string;
   industry: string;
   foundedDate: string;
@@ -53,8 +54,8 @@ const ManageEmployees = () => {
     fetchCompanies();
   }, []);
 
-  const handleSelectCompany = (companyName: string) => {
-    const selected = companies.find((c) => c.name === companyName);
+  const handleSelectCompany = (companyId: number) => {
+    const selected = companies.find((c) => c.companyId === companyId);
     setSelectedCompany(selected || null);
     if (selected) {
       fetchEmployees(selected);
@@ -64,19 +65,9 @@ const ManageEmployees = () => {
   const fetchEmployees = async (company: Company) => {
     setLoading(true);
     try {
-      const payload = {
-        name: company.name,
-        industry: company.industry,
-        foundedDate: company.foundedDate,
-        registrationNumber: company.registrationNumber,
-        taxId: company.taxId,
-      };
-
-      //   console.log('Sending getAllEmployees Payload:', payload); // Debug log for payload
-
-      const response = await getAllEmployees(payload);
-
-      //   console.log('Received response from getAllEmployees:', response); // Log response
+      // console.log('Fetching employees for company ID:', company.companyId); // Debug log for payload
+      const response = await getAllEmployees(company.companyId);
+      // console.log('Received response from getAllEmployees:', response); // Log response
 
       if (response.statusCode === 200 && response.data.length > 0) {
         // console.log('Successfully fetched employees:', response.data);
@@ -106,22 +97,16 @@ const ManageEmployees = () => {
       return;
     }
 
+    const payload = {
+      companyId: selectedCompany.companyId,
+      EmployeeUsername: employeeUsername,
+      Position: position,
+      StartDate: startDate,
+    };
+    // console.log('Sending addEmployee Payload:', payload);
     try {
-      const payload = {
-        CompanyName: selectedCompany.name,
-        Industry: selectedCompany.industry,
-        foundedDate: selectedCompany.foundedDate,
-        registrationNumber: selectedCompany.registrationNumber,
-        taxId: selectedCompany.taxId,
-        EmployeeUsername: employeeUsername,
-        Position: position,
-        StartDate: startDate,
-      };
-
-      //   console.log('Sending addEmployee Payload:', payload);
-
       const response = await addEmployee(payload);
-      //   console.log('Received response from addEmployee:', response);
+      // console.log('Received response from addEmployee:', response);
 
       if (response.statusCode === 200) {
         alert(response.message || 'Employee added successfully.');
@@ -144,27 +129,20 @@ const ManageEmployees = () => {
       alert('Please select a company first.');
       return;
     }
-
+  
     const confirmDelete = confirm(
       `Are you sure you want to delete ${username} from ${selectedCompany.name}?`
     );
     if (!confirmDelete) return;
-
+  
     try {
       const payload = {
-        CompanyName: selectedCompany.name,
-        Industry: selectedCompany.industry,
-        foundedDate: selectedCompany.foundedDate,
-        registrationNumber: selectedCompany.registrationNumber,
-        taxId: selectedCompany.taxId,
+        companyId: selectedCompany.companyId,
         employeeUsername: username,
       };
-
-      //   console.log('Sending deleteEmployee Payload:', payload);
-
+  
       const response = await deleteEmployee(payload);
-      //   console.log('Received response from deleteEmployee:', response);
-
+  
       if (response.statusCode === 200) {
         alert(response.message || 'Employee deleted successfully.');
         await fetchEmployees(selectedCompany);
@@ -176,7 +154,7 @@ const ManageEmployees = () => {
       console.error('Error deleting employee:', err);
       alert('An error occurred while deleting the employee. Please try again.');
     }
-  };
+  };  
 
   return (
     <div className="bg-gray-800 text-white p-6 rounded-lg shadow-lg max-w-4xl mx-auto">
@@ -187,11 +165,11 @@ const ManageEmployees = () => {
         <label className="block text-lg mb-2">Select Company:</label>
         <select
           className="p-3 w-80 bg-gray-900 rounded-md"
-          onChange={(e) => handleSelectCompany(e.target.value)}
+          onChange={(e) => handleSelectCompany(Number(e.target.value))}
         >
           <option value="">Select a company</option>
           {companies.map((company) => (
-            <option key={company.name} value={company.name}>
+            <option key={company.companyId} value={company.companyId}>
               {company.name}
             </option>
           ))}

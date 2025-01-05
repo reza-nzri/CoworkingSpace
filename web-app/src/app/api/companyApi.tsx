@@ -16,7 +16,7 @@ export const postCeoRegisterComapny = async (
       `${API_BASE_URL}/Company/ceo/register-company`,
       formData,
       {
-        headers: {Authorization: `Bearer ${token}`,},
+        headers: { Authorization: `Bearer ${token}` },
       }
     );
 
@@ -38,7 +38,6 @@ export const postCeoRegisterComapny = async (
   }
 };
 
-
 export const getCeoCompanyDetails = async () => {
   try {
     const token = Cookies.get('jwt');
@@ -55,7 +54,7 @@ export const getCeoCompanyDetails = async () => {
           Authorization: `Bearer ${token}`,
         },
       }
-    );    
+    );
 
     // console.log('API Response:', response.data);
 
@@ -65,7 +64,8 @@ export const getCeoCompanyDetails = async () => {
     } else {
       console.warn('No company data found for the user.');
       return {
-        message: response.data.message || 'No companies associated with the user.',
+        message:
+          response.data.message || 'No companies associated with the user.',
         data: [],
       };
     }
@@ -73,13 +73,15 @@ export const getCeoCompanyDetails = async () => {
     if (axios.isAxiosError(error) && error.response) {
       const { statusCode, message } = error.response.data;
       console.error('API Error Response:', error.response.data);
-      
+
       if (statusCode === 404) {
         throw new Error(
           `Company not found. Possible reasons:\n- No companies are associated with the logged-in user.\n- User may not have CEO permissions.`
         );
       } else if (statusCode === 401) {
-        throw new Error('Unauthorized. Please ensure you are logged in as a CEO.');
+        throw new Error(
+          'Unauthorized. Please ensure you are logged in as a CEO.'
+        );
       } else {
         throw new Error(message || 'Failed to fetch company details.');
       }
@@ -109,10 +111,10 @@ export const deleteCompany = async (companyId: number) => {
           Authorization: `Bearer ${token}`,
         },
         params: {
-          companyId: companyId,  // Ensure the correct payload is passed here
+          companyId: companyId, // Ensure the correct payload is passed here
         },
       }
-    );    
+    );
 
     // Log and Return Successful Response
     // console.log('Delete company response:', response.data);
@@ -134,29 +136,31 @@ export const deleteCompany = async (companyId: number) => {
 
 // Endpoint to delete all companies for the current CEO
 export const deleteAllCompanies = async () => {
-    try {
-      const token = Cookies.get('jwt');
-      if (!token) {
-        throw new Error('JWT token is missing. Please log in.');
-      }
-  
-      const response = await axios.delete(
-        `${API_BASE_URL}/Company/ceo/delete-all-my-companies`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-  
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        console.error('Error deleting all companies:', error.response.data);
-        throw new Error(error.response.data.message || 'Failed to delete all companies.');
-      }
-      throw error;
+  try {
+    const token = Cookies.get('jwt');
+    if (!token) {
+      throw new Error('JWT token is missing. Please log in.');
     }
+
+    const response = await axios.delete(
+      `${API_BASE_URL}/Company/ceo/delete-all-my-companies`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      console.error('Error deleting all companies:', error.response.data);
+      throw new Error(
+        error.response.data.message || 'Failed to delete all companies.'
+      );
+    }
+    throw error;
+  }
 };
 
 export const updateCompanyDetails = async (
@@ -171,7 +175,9 @@ export const updateCompanyDetails = async (
 
     // Filter out null or empty fields
     const filteredData = Object.fromEntries(
-      Object.entries(formData).filter(([, value]) => value !== null && value !== '')
+      Object.entries(formData).filter(
+        ([, value]) => value !== null && value !== ''
+      )
     );
 
     // console.log('Updating company with ID:', companyId);
@@ -204,13 +210,7 @@ export const updateCompanyDetails = async (
   }
 };
 
-export const getAllEmployees = async (company: {
-  name: string;
-  industry: string;
-  foundedDate: string;
-  registrationNumber: string;
-  taxId: string;
-}) => {
+export const getAllEmployees = async (companyId: number) => {
   try {
     const token = Cookies.get('jwt');
     if (!token) {
@@ -218,19 +218,9 @@ export const getAllEmployees = async (company: {
       throw new Error('JWT token is missing. Please log in.');
     }
 
-    // Extract the necessary parameters
-    const { name, industry, foundedDate, registrationNumber, taxId } = company;
-
     const params = {
-      companyName: name,
-      industry: industry,
-      foundedDate: foundedDate,
-      registrationNumber: registrationNumber || '',
-      taxId: taxId || '',
+      companyId: companyId,
     };
-
-    // console.log('Preparing to send GET request to fetch employees...');
-    // console.log('Request Params:', params);
 
     const response = await axios.get(
       `${API_BASE_URL}/Company/ceo/get-all-employees`,
@@ -242,7 +232,6 @@ export const getAllEmployees = async (company: {
       }
     );
 
-    // console.log('Successfully fetched employees:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error occurred while fetching employees.');
@@ -260,11 +249,7 @@ export const getAllEmployees = async (company: {
 };
 
 export const deleteEmployee = async (payload: {
-  CompanyName: string;
-  Industry: string;
-  foundedDate: string;
-  registrationNumber: string;
-  taxId: string;
+  companyId: number;
   employeeUsername: string;
 }) => {
   try {
@@ -273,22 +258,15 @@ export const deleteEmployee = async (payload: {
       throw new Error('JWT token is missing. Please log in.');
     }
 
-    // Log the payload for debugging
-    // console.log('Deleting employee with payload:', payload);
-
     const response = await axios.delete(
       `${API_BASE_URL}/Company/ceo/delete-employee`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        data: {
-          CompanyName: payload.CompanyName,
-          Industry: payload.Industry,
-          foundedDate: payload.foundedDate,
-          RegistrationNumber: payload.registrationNumber || '',
-          TaxId: payload.taxId || '',
-          EmployeeUsername: payload.employeeUsername,
+        params: {
+          companyId: payload.companyId,
+          employeeUsername: payload.employeeUsername,
         },
       }
     );
@@ -306,11 +284,7 @@ export const deleteEmployee = async (payload: {
 };
 
 export const addEmployee = async (payload: {
-  CompanyName: string;
-  Industry: string;
-  foundedDate: string;
-  registrationNumber: string;
-  taxId: string;
+  companyId: number;
   EmployeeUsername: string;
   Position: string;
   StartDate: string;
@@ -318,10 +292,10 @@ export const addEmployee = async (payload: {
   try {
     const token = Cookies.get('jwt');
     if (!token) {
+      console.error('Error: JWT token is missing.');
       throw new Error('JWT token is missing. Please log in.');
     }
 
-    // Log the payload for debugging
     // console.log('Adding employee with payload:', payload);
 
     const response = await axios.post(
@@ -334,25 +308,28 @@ export const addEmployee = async (payload: {
       {
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
         params: {
-          CompanyName: payload.CompanyName,
-          Industry: payload.Industry,
-          foundedDate: payload.foundedDate,
-          registrationNumber: payload.registrationNumber || '',
-          taxId: payload.taxId || '',
+          companyId: payload.companyId,
         },
       }
     );
 
+    // console.log('Employee added successfully:', response.data);
     return response.data;
   } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      console.error('Error adding employee:', error.response.data);
+    console.error('Error occurred while adding employee.');
+
+    if (axios.isAxiosError(error)) {
+      console.error('Axios error details:', error.response?.data);
+      console.error('Status Code:', error.response?.status);
       throw new Error(
-        error.response.data.message || 'Failed to add employee.'
+        error.response?.data?.message || 'Failed to add employee.'
       );
+    } else {
+      console.error('Unexpected error:', error);
+      throw new Error('An unexpected error occurred.');
     }
-    throw error;
   }
 };
