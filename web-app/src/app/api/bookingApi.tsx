@@ -446,3 +446,47 @@ export const getRevenueBreakdown = async (
     throw error;
   }
 };
+
+export const getMyCompanies = async (username: string) => {
+  try {
+    const token = Cookies.get('jwt');
+    if (!token) {
+      console.error('JWT token is missing.');
+      throw new Error('JWT token is missing. Please log in.');
+    }
+
+    if (!username) {
+      console.warn('Username is required.');
+      throw new Error('Username is required.');
+    }
+
+    // console.log(`Fetching companies for user: ${username}`);
+
+    const response = await axios.get(
+      `${API_BASE_URL}/Company/employee/get-my-companies`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          username: username,
+        },
+      }
+    );
+
+    // console.log('Companies retrieved successfully:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching companies:', error);
+
+    if (axios.isAxiosError(error)) {
+      console.error('Axios error details:', error.response?.data);
+      console.error('Status Code:', error.response?.status);
+      console.error('Headers:', error.response?.headers);
+    } else {
+      console.error('Unexpected error:', error);
+    }
+
+    throw error;
+  }
+};

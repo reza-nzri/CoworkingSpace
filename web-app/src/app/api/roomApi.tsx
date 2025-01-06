@@ -10,7 +10,7 @@ export const getAllRooms = async (companyId: number) => {
       throw new Error('JWT token is missing. Please log in.');
     }
 
-    // console.log('Fetching all rooms for company:', companyId);
+    console.log('Fetching all rooms for company:', companyId);
 
     const response = await axios.get(`${API_BASE_URL}/Room/ceo/get-all-rooms`, {
       headers: {
@@ -21,7 +21,7 @@ export const getAllRooms = async (companyId: number) => {
       },
     });
 
-    // console.log('Rooms retrieved:', response.data);
+    console.log('Rooms retrieved:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching rooms:', error);

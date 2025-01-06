@@ -129,20 +129,20 @@ const ManageEmployees = () => {
       alert('Please select a company first.');
       return;
     }
-  
+
     const confirmDelete = confirm(
       `Are you sure you want to delete ${username} from ${selectedCompany.name}?`
     );
     if (!confirmDelete) return;
-  
+
     try {
       const payload = {
         companyId: selectedCompany.companyId,
         employeeUsername: username,
       };
-  
+
       const response = await deleteEmployee(payload);
-  
+
       if (response.statusCode === 200) {
         alert(response.message || 'Employee deleted successfully.');
         await fetchEmployees(selectedCompany);
@@ -154,10 +154,10 @@ const ManageEmployees = () => {
       console.error('Error deleting employee:', err);
       alert('An error occurred while deleting the employee. Please try again.');
     }
-  };  
+  };
 
   return (
-    <div className="bg-gray-800 text-white p-6 rounded-lg shadow-lg max-w-4xl mx-auto">
+    <div className="bg-gray-800 text-white p-6 rounded-lg shadow-lg max-w-4xl mx-auto ">
       <h2 className="text-3xl font-bold mb-4 text-center">Manage Employees</h2>
 
       {/* Select Company */}
@@ -177,44 +177,47 @@ const ManageEmployees = () => {
       </div>
 
       {/* Add Employee */}
-      <div className="mb-6">
-        <label className="block text-lg mb-2">Add Employee (Username):</label>
-        <input
-          type="text"
-          className="p-3 bg-gray-900 rounded-md w-80 mr-5"
-          value={employeeUsername}
-          onChange={(e) => setEmployeeUsername(e.target.value)}
-        />
-      </div>
+      <div className="bg-gray-700 rounded-lg p-3 my-10">
+        <div className="mb-6">
+          <label className="block text-lg mb-2">Add Employee (Username):</label>
+          <input
+            type="text"
+            className="p-3 bg-gray-900 rounded-md w-80 mr-5"
+            value={employeeUsername}
+            onChange={(e) => setEmployeeUsername(e.target.value)}
+            placeholder="Enter Employee Username"
+          />
+        </div>
 
-      <div className="mb-6">
-        <label className="block text-lg mb-2">Position:</label>
-        <input
-          type="text"
-          className="p-3 bg-gray-900 rounded-md w-80 mr-5"
-          value={position}
-          onChange={(e) => setPosition(e.target.value)}
-          placeholder="Enter position"
-        />
-      </div>
+        <div className="mb-6">
+          <label className="block text-lg mb-2">Position:</label>
+          <input
+            type="text"
+            className="p-3 bg-gray-900 rounded-md w-80 mr-5"
+            value={position}
+            onChange={(e) => setPosition(e.target.value)}
+            placeholder="Enter position"
+          />
+        </div>
 
-      <div className="mb-6">
-        <label className="block text-lg mb-2">Start Date:</label>
-        <input
-          type="date"
-          className="p-3 bg-gray-900 rounded-md w-80"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-        />
-      </div>
+        <div className="mb-6">
+          <label className="block text-lg mb-2">Start Date:</label>
+          <input
+            type="date"
+            className="p-3 bg-gray-900 rounded-md w-80"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+        </div>
 
-      <div className="mb-6">
-        <button
-          onClick={handleAddEmployee}
-          className="mt-4 bg-green-600 hover:bg-green-700 px-6 py-2 rounded-md"
-        >
-          Add Employee
-        </button>
+        <div>
+          <button
+            onClick={handleAddEmployee}
+            className="mt-4 bg-green-600 hover:bg-green-700 px-6 py-2 rounded-md"
+          >
+            Add Employee
+          </button>
+        </div>
       </div>
 
       {/* Employee Count Card */}

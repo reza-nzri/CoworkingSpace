@@ -8,9 +8,10 @@ import {
   faUserFriends,
   faCheck,
 } from '@fortawesome/free-solid-svg-icons';
+import BookingManagement from './BookingManagement';
 
 const BookingPage = () => (
-  <div className="min-h-screen bg-gray-900 text-white my-2">
+  <div className="min-h-screen bg-gray-900 text-white my-2 py-10">
     <div className="container mx-auto p-6">
       <h1 className="text-4xl font-bold text-center mb-8">
         <FontAwesomeIcon icon={faCalendarAlt} className="text-blue-500" />{' '}
@@ -68,6 +69,8 @@ const BookingPage = () => (
         </div>
       </div>
     </div>
+
+    <BookingManagement />
   </div>
 );
 
