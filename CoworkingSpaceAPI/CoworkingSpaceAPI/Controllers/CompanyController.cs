@@ -87,6 +87,62 @@ namespace CoworkingSpaceAPI.Controllers
             });
         }
 
+        [HttpGet("employee/get-my-companies")]
+        [Authorize]
+        public async Task<IActionResult> GetMyCompanies([FromQuery] string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return BadRequest(new
+                {
+                    StatusCode = 400,
+                    Message = "Username is required."
+                });
+            }
+
+            // Find the user by username
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return NotFound(new
+                {
+                    StatusCode = 404,
+                    Message = $"User with username '{username}' was not found."
+                });
+            }
+
+            // Retrieve all companies where the user is an employee
+            var companies = await _context.Companies
+                .Include(c => c.CompanyEmployees)
+                .Where(c => c.CompanyEmployees.Any(e => e.UserId == user.Id))
+                .ToListAsync();
+
+            if (companies == null || !companies.Any())
+            {
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Message = "User is not registered in any company.",
+                    Data = new List<object>()
+                });
+            }
+
+            // Map companies to DTOs
+            var companyList = companies.Select(c => new
+            {
+                c.CompanyId,
+                c.Name,
+                c.Industry
+            }).ToList();
+
+            return Ok(new
+            {
+                StatusCode = 200,
+                Message = "Companies retrieved successfully.",
+                Data = companyList
+            });
+        }
+
         [HttpGet("ceo/get-company-details")]
         [Authorize(Roles = "CEO")]
         public async Task<IActionResult> GetCompanyDetails()
@@ -690,8 +746,8 @@ namespace CoworkingSpaceAPI.Controllers
         [HttpDelete("ceo/delete-employee")]
         [Authorize(Roles = "CEO")]
         public async Task<IActionResult> DeleteEmployee(
-    [FromQuery] int companyId,
-    [FromQuery] string employeeUsername)
+            [FromQuery] int companyId,
+            [FromQuery] string employeeUsername)
         {
             // Extract CEO username from JWT
             var ceoUsername = User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
