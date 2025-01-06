@@ -13,6 +13,7 @@ import {
 import CompanyDetailsList from './CompanyDetailsList';
 import ManageEmployees from './ManageEmployees';
 import RoomManagement from './room/RoomManagement';
+import DeskManagement from './desk/DeskManagement';
 
 const CompanyPage = () => {
   const [companies] = useState([
@@ -51,7 +52,7 @@ const CompanyPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white my-2">
+    <div className="min-h-screen bg-gray-900 text-white my-2 py-10">
       <div className="container mx-auto p-6">
         {/* Header Section */}
         <div className="text-center mb-12">
@@ -147,6 +148,7 @@ const CompanyPage = () => {
       <CompanyDetailsList />
       <ManageEmployees />
       <RoomManagement />
+      <DeskManagement />
     </div>
   );
 };

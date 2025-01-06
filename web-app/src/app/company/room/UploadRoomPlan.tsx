@@ -16,8 +16,10 @@ const UploadRoomPlan: React.FC<UploadRoomPlanProps> = ({ selectedCompany }) => {
   const [roomPlan, setRoomPlan] = useState<string | null>(null);
 
   const loadRoomPlan = () => {
-    const imagePath = `/company/room/map-cloud/${selectedCompany.name}_${selectedCompany.industry}_${selectedCompany.foundedDate}_${selectedCompany.registrationNumber}_${selectedCompany.taxId}.png`;
+    const formattedCompanyName = selectedCompany.name.replace(/\s+/g, '-');
+    const imagePath = `/company/room/map-cloud/${formattedCompanyName}.png`;
     setRoomPlan(imagePath);
+    // console.log('Image Path:', imagePath);
   };
 
   useEffect(() => {
