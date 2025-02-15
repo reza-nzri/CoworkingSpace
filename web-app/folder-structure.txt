@@ -1,0 +1,123 @@
+CoworkingSpace/web-app/
+  ├─].next/ (ignored)
+  ├─ .vscode/
+  │  └─ sessions.json
+  ├─]node_modules/ (ignored)
+  ├─ public/
+  │  └─ media/
+  │     └─ images/
+  │        ├─ flags/
+  │        │  ├─ de.png
+  │        │  └─ us.png
+  │        └─ logos/
+  │           └─ desk_logo/
+  │              ├─ desk_logo_1.svg
+  │              └─ text_desk_logo_1.svg
+  ├─ src/
+  │  └─ app/
+  │     ├─ admin/
+  │     │  ├─ page.tsx
+  │     │  └─ roles.tsx
+  │     ├─ api/
+  │     │  ├─ types/
+  │     │  │  └─ ProfileData.ts
+  │     │  ├─ accountApi.tsx
+  │     │  ├─ addressApi.tsx
+  │     │  ├─ authApi.tsx
+  │     │  ├─ companyApi.tsx
+  │     │  ├─ PrivateRoute.tsx
+  │     │  └─ upload-room-plan.ts
+  │     ├─ booking/
+  │     │  └─ page.tsx
+  │     ├─ ceo/
+  │     │  └─ page.tsx
+  │     ├─ company/
+  │     │  ├─ room/
+  │     │  │  ├─ map-cloud/
+  │     │  │  │  └─ Sigma-GmbH-51_Asad_20250102_d152dD_s25D.png
+  │     │  │  ├─ RoomManagement.tsx
+  │     │  │  └─ UploadRoomPlan.tsx
+  │     │  ├─ CompanyDetailsList.tsx
+  │     │  ├─ EditCompanyModal.tsx
+  │     │  ├─ ManageEmployees.tsx
+  │     │  ├─ page.tsx
+  │     │  └─ RegisterCompanyModal.tsx
+  │     ├─ components/
+  │     │  ├─ common/
+  │     │  │  ├─ Button.tsx
+  │     │  │  ├─ Input.tsx
+  │     │  │  ├─ LogoutButton.js
+  │     │  │  ├─ MessageBox.tsx
+  │     │  │  ├─ Modal.tsx
+  │     │  │  └─ Tooltip.tsx
+  │     │  ├─ forms/
+  │     │  │  └─ auth/
+  │     │  │     ├─ LoginForm.tsx
+  │     │  │     └─ RegisterForm.tsx
+  │     │  ├─ layout/
+  │     │  │  ├─ navbar/
+  │     │  │  │  ├─ LanguageDropdown.tsx
+  │     │  │  │  ├─ Navbar.module.css
+  │     │  │  │  ├─ Navbar.tsx
+  │     │  │  │  ├─ ProfileMenu.tsx
+  │     │  │  │  └─ ThemeSwitch.tsx
+  │     │  │  ├─ Footer.tsx
+  │     │  │  ├─ Header.tsx
+  │     │  │  └─ Sidebar.tsx
+  │     │  └─ maps/
+  │     │     └─ RoomMap.tsx
+  │     ├─ error403/
+  │     │  └─ page.tsx
+  │     ├─ fonts/
+  │     │  ├─ GeistMonoVF.woff
+  │     │  └─ GeistVF.woff
+  │     ├─ hooks/
+  │     │  ├─ useAuth.ts
+  │     │  ├─ useBooking.ts
+  │     │  └─ useCompany.ts
+  │     ├─ login/
+  │     │  └─ page.tsx
+  │     ├─ mybookings/
+  │     │  └─ page.tsx
+  │     ├─ normal-user/
+  │     │  └─ page.tsx
+  │     ├─ pages/
+  │     ├─ profile/
+  │     │  └─ page.tsx
+  │     ├─ register/
+  │     │  └─ page.tsx
+  │     ├─ services/
+  │     │  ├─ authService.ts
+  │     │  ├─ bookingService.ts
+  │     │  ├─ companyService.ts
+  │     │  └─ userService.ts
+  │     ├─ store/
+  │     │  ├─ bookingStore.ts
+  │     │  ├─ companyStore.ts
+  │     │  └─ userStore.ts
+  │     ├─ styles/
+  │     │  ├─ globals.css
+  │     │  └─ themes.css
+  │     ├─ utils/
+  │     │  ├─ authUtils
+  │     │  ├─ routes.ts
+  │     │  └─ themeUtils.ts
+  │     ├─ layout.tsx
+  │     └─ page.tsx
+  ├─ .editorconfig
+  ├─].env (ignored)
+  ├─].env.example (ignored)
+  ├─ .eslintrc.json
+  ├─ .gitignore
+  ├─ .prettierignore
+  ├─ .prettierrc.json
+  ├─ folder-structure.txt
+  ├─ middleware.ts
+  ├─]next-env.d.ts (ignored)
+  ├─ next.config.ts
+  ├─ package-lock.json
+  ├─ package.json
+  ├─ postcss.config.mjs
+  ├─ README.md
+  ├─ tailwind.config.ts
+  └─ tsconfig.json

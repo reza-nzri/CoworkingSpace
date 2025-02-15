@@ -1,0 +1,12 @@
+/* Navbar.module.css */
+.navbar {
+  @apply flex justify-between items-center p-4 bg-background text-foreground;
+}
+
+.logo {
+  @apply flex items-center;
+}
+
+.menu {
+  @apply flex items-center gap-4;
+}

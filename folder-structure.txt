@@ -1,0 +1,7 @@
+CoworkingSpace/
+  ├─ CoworkingSpaceAPI/
+  ├─ Docs/
+  ├─ web-app/
+  ├─ .gitignore
+  ├─ folder-structure.txt
+  └─ README.md
